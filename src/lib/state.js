@@ -13,6 +13,7 @@ export function emptyState() {
     restOverrides: {},
     workoutLogs: {},
     foodLogs: {},
+    foods: [],
     calendarNotes: {},
     extraEvents: [],
   };
@@ -21,6 +22,20 @@ export function emptyState() {
 export function newId() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
   return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+export function emptyCatalogFood() {
+  return {
+    name: "",
+    brand: "",
+    amount: "",
+    unit: "g",
+    kcal: "",
+    protein: "",
+    carbs: "",
+    fat: "",
+    notes: "",
+  };
 }
 
 export function emptyFoodDay() {

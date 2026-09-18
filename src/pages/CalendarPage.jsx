@@ -10,6 +10,7 @@ import {
 } from "../lib/dates.js";
 import { collectRestMap, isRestDay } from "../lib/restDays.js";
 import { calendarKind, sessionForDate } from "../lib/program.js";
+import { formatWeightKg } from "../lib/nutrition.js";
 
 export default function CalendarPage() {
   const now = localParts();
@@ -61,6 +62,7 @@ export default function CalendarPage() {
             const cellRest = isRestDay(cell.iso, restMap);
             const hasGame = Boolean(state.games[cell.iso]);
             const hasFood = (state.foodLogs[cell.iso]?.meals || []).length > 0;
+            const weight = formatWeightKg(state.foodLogs[cell.iso]?.weightKg);
             const cellKind = calendarKind({ isGame: hasGame, isRest: cellRest });
             return (
               <button
@@ -74,6 +76,7 @@ export default function CalendarPage() {
                 }}
               >
                 <b>{Number(cell.iso.slice(8))}</b>
+                {weight ? <span className="cell-weight">{weight}</span> : null}
                 <span className="dots">
                   {hasGame ? <i className="dot game" /> : null}
                   {cellRest ? <i className="dot rest" /> : null}

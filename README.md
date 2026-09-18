@@ -9,8 +9,8 @@ This repository is this site only.
 ## What it does
 
 - **Gym, Monday–Sunday**, a set ice-hockey session each day (agility, aerobic, recovery, strength, intervals, long bike, core). Rest only if you mark it.
-- **Weigh-in every day.**
-- **Food** starts blank. Add ingredients you cook. The week’s shop list fills from what you add.
+- **Weigh-in every day** on Gym or Today. That number shows on the calendar square for that day.
+- **Food** is a book you edit (chicken, rice, whatever you eat). Pick foods onto whatever day you’re cooking. The week’s shop list fills from those days. No check-in on Food.
 - **Built-in calendar** in local time.
 - **Logins:** Caleb and Nix each have a username and password.
 

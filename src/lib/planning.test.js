@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
 import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { mealTotals, remaining, targetsFor, weekBuyList } from "./nutrition.js";
+import { formatWeightKg, mealTotals, remaining, scaleCatalogFood, targetsFor, weekBuyList } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
 
@@ -108,6 +108,42 @@ describe("week shop list", () => {
     expect(list).toHaveLength(2);
     expect(list[0]).toMatchObject({ name: "Chicken", amount: 600, unit: "g", protein: 120 });
     expect(list[1]).toMatchObject({ name: "Rice", amount: 150, unit: "g" });
+  });
+});
+
+describe("food book", () => {
+  it("scales a catalog food onto a day", () => {
+    const meal = scaleCatalogFood(
+      {
+        id: "chicken",
+        name: "Chicken",
+        brand: "Shop",
+        amount: 100,
+        unit: "g",
+        kcal: 165,
+        protein: 31,
+        carbs: 0,
+        fat: 3.6,
+      },
+      2
+    );
+    expect(meal).toMatchObject({
+      foodId: "chicken",
+      name: "Chicken",
+      amount: 200,
+      unit: "g",
+      kcal: 330,
+      protein: 62,
+      fat: 7.2,
+      servings: 2,
+    });
+  });
+
+  it("formats a weigh-in for a calendar square", () => {
+    expect(formatWeightKg("82.4")).toBe("82.4 kg");
+    expect(formatWeightKg(82)).toBe("82 kg");
+    expect(formatWeightKg("")).toBe("");
+    expect(formatWeightKg(0)).toBe("");
   });
 });
 

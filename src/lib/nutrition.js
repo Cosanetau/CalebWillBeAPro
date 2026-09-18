@@ -121,6 +121,32 @@ export function amountLine(item) {
   return `${amount} ${item.unit}`;
 }
 
+export function scaleCatalogFood(food, servings = 1) {
+  const factor = Number(servings);
+  const n = Number.isFinite(factor) && factor > 0 ? factor : 1;
+  const scale = (value) => Math.round(Number(value || 0) * n * 10) / 10;
+  return {
+    foodId: food.id || "",
+    name: String(food.name || "").trim(),
+    brand: String(food.brand || "").trim(),
+    unit: String(food.unit || "").trim(),
+    notes: String(food.notes || "").trim(),
+    servings: n,
+    amount: scale(food.amount),
+    kcal: scale(food.kcal),
+    protein: scale(food.protein),
+    carbs: scale(food.carbs),
+    fat: scale(food.fat),
+  };
+}
+
+export function formatWeightKg(value) {
+  if (value === "" || value == null) return "";
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return `${n} kg`;
+}
+
 export const SUPPLEMENTS = [
   { id: "creatine", label: "Creatine 5g" },
   { id: "whey", label: "Whey / milk protein" },

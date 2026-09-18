@@ -7,7 +7,7 @@ import { dayKind, getSession, PILLARS } from "../lib/program.js";
 export default function GymPage() {
   const today = tokyoISODate();
   const [selected, setSelected] = useState(today);
-  const { actor } = useApp();
+  const { actor, auth } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
   const planned = week.plan[selected];
@@ -188,12 +188,12 @@ export default function GymPage() {
             <input
               value={day.workout.notes}
               onChange={(event) => day.setWorkout({ notes: event.target.value, sessionId: session.id })}
-              placeholder={actor === "nutritionist" ? "Nutritionist gym note" : "Caleb’s gym note"}
+              placeholder={actor === "nutritionist" ? "Nix’s gym note" : "Caleb’s gym note"}
             />
           </label>
         </div>
         <p className="muted">
-          {completedCount} movements ticked. Logged as {actor === "nutritionist" ? "nutritionist" : "Caleb"}.
+          {completedCount} movements ticked. Logged as {auth.username}.
         </p>
       </section>
     </div>

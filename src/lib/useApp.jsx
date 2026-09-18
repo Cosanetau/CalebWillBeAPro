@@ -1,36 +1,55 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { fetchAuth, loadState, saveState, signOut, submitAccessWord } from "./api.js";
+import { seedAccounts, signIn, signOut } from "./api.js";
+import { loadProfile, loadState, saveState } from "./data.js";
 import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
 import { mondayOfWeek, tokyoISODate, weekDatesContaining } from "./tokyo.js";
 import { resolveRestDays } from "./restDays.js";
 import { planWeek } from "./program.js";
+import { supabase } from "./supabase.js";
 
 const AppContext = createContext(null);
-const ACTOR_KEY = "cwbp_actor";
 
 export function AppProvider({ children }) {
-  const [auth, setAuth] = useState({ loading: true, ok: false, needsSetup: false });
+  const [auth, setAuth] = useState({ loading: true, ok: false, username: "", role: "caleb" });
   const [state, setState] = useState(emptyState());
-  const [actor, setActorState] = useState(() => localStorage.getItem(ACTOR_KEY) || "caleb");
   const [saveError, setSaveError] = useState("");
   const [savedAt, setSavedAt] = useState(null);
   const timer = useRef(null);
 
-  const refreshAuth = useCallback(async () => {
-    const next = await fetchAuth();
-    setAuth({ loading: false, ok: next.ok, needsSetup: next.needsSetup });
-    return next;
+  const hydrate = useCallback(async (session) => {
+    if (!session) {
+      setAuth({ loading: false, ok: false, username: "", role: "caleb" });
+      setState(emptyState());
+      return;
+    }
+    const profile = await loadProfile();
+    setAuth({
+      loading: false,
+      ok: true,
+      username: profile?.username || "Caleb",
+      role: profile?.role || "caleb",
+    });
+    try {
+      setState(await loadState());
+    } catch (error) {
+      setSaveError(error.message || "Could not load shared data.");
+      setState(emptyState());
+    }
   }, []);
 
   useEffect(() => {
-    refreshAuth()
-      .then(async (next) => {
-        if (next.ok) {
-          setState(await loadState());
-        }
-      })
-      .catch(() => setAuth({ loading: false, ok: false, needsSetup: false }));
-  }, [refreshAuth]);
+    seedAccounts();
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      hydrate(session).catch((error) => {
+        setSaveError(error.message || "Could not load.");
+        setAuth({ loading: false, ok: false, username: "", role: "caleb" });
+      });
+    });
+
+    supabase.auth.getSession().then(({ data: sessionData }) => hydrate(sessionData.session));
+
+    return () => data.subscription.unsubscribe();
+  }, [hydrate]);
 
   const persist = useCallback((next) => {
     clearTimeout(timer.current);
@@ -57,38 +76,30 @@ export function AppProvider({ children }) {
     [persist]
   );
 
-  const unlock = useCallback(async (word) => {
-    const result = await submitAccessWord(word);
-    setAuth({ loading: false, ok: true, needsSetup: false });
-    setState(await loadState());
-    return result;
+  const login = useCallback(async (username, password) => {
+    await signIn(username, password);
   }, []);
 
   const lock = useCallback(async () => {
     await signOut();
-    setAuth({ loading: false, ok: false, needsSetup: false });
+    setAuth({ loading: false, ok: false, username: "", role: "caleb" });
     setState(emptyState());
   }, []);
 
-  const setActor = useCallback((value) => {
-    localStorage.setItem(ACTOR_KEY, value);
-    setActorState(value);
-  }, []);
+  const actor = auth.role === "nutritionist" ? "nutritionist" : "caleb";
 
   const value = useMemo(
     () => ({
       auth,
       state,
       actor,
-      setActor,
       patch,
-      unlock,
+      login,
       lock,
       saveError,
       savedAt,
-      refreshAuth,
     }),
-    [auth, state, actor, setActor, patch, unlock, lock, saveError, savedAt, refreshAuth]
+    [auth, state, actor, patch, login, lock, saveError, savedAt]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

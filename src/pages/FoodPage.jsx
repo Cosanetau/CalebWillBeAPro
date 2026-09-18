@@ -10,7 +10,7 @@ import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 export default function FoodPage() {
   const today = tokyoISODate();
   const [selected, setSelected] = useState(today);
-  const { state, actor } = useApp();
+  const { state, actor, auth } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
   const kind = dayKind(week.plan[selected]?.sessionId);
@@ -59,7 +59,7 @@ export default function FoodPage() {
   return (
     <div className="stack">
       <section className="hero-card compact">
-        <p className="kicker">Food · {actor === "nutritionist" ? "Nutritionist" : "Caleb"}</p>
+        <p className="kicker">Food · {auth.username}</p>
         <h1>{targets.label} fuel</h1>
         <p className="lede">
           {session.title} today. Targets move with game, train, and rest days so the gym week and
@@ -113,7 +113,7 @@ export default function FoodPage() {
                         <strong>{meal.name}</strong>
                         <span>
                           {meal.kcal} kcal · P {meal.protein} · C {meal.carbs} · F {meal.fat}
-                          {meal.actor === "nutritionist" ? " · nutritionist" : ""}
+                          {meal.actor === "nutritionist" ? " · Nix" : ""}
                         </span>
                       </div>
                       <button type="button" className="text-btn" onClick={() => removeMeal(meal.id)}>

@@ -1,8 +1,6 @@
 export function emptyState() {
   return {
     rev: 1,
-    accessWordHash: "",
-    sessions: [],
     profile: {
       athlete: "Caleb",
       weightKg: 82,

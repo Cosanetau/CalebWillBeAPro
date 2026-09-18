@@ -12,7 +12,7 @@ const links = [
 ];
 
 export default function Shell() {
-  const { actor, setActor, lock, saveError, savedAt } = useApp();
+  const { auth, lock, saveError, savedAt } = useApp();
   const [now, setNow] = useState(() => new Date());
   const [showSaved, setShowSaved] = useState(false);
 
@@ -55,17 +55,8 @@ export default function Shell() {
             <strong>{tokyoClock(now)}</strong>
             <span>{formatTokyoDate(today, { weekday: "short", month: "short", year: undefined })}</span>
           </div>
-          <div className="actor-toggle" role="group" aria-label="Who is using this">
-            <button type="button" className={actor === "caleb" ? "is-on" : ""} onClick={() => setActor("caleb")}>
-              Caleb
-            </button>
-            <button
-              type="button"
-              className={actor === "nutritionist" ? "is-on" : ""}
-              onClick={() => setActor("nutritionist")}
-            >
-              Nutritionist
-            </button>
+          <div className="who" title={auth.role === "nutritionist" ? "Nutritionist" : "Athlete"}>
+            {auth.username}
           </div>
           <button type="button" className="icon-btn" onClick={lock} title="Lock">
             <LogOut size={18} />
@@ -91,7 +82,7 @@ export default function Shell() {
 
       <footer className="site-foot">
         <span>calebwillbeapro.cosa.net.au</span>
-        <span>Shared access word · Asia/Tokyo</span>
+        <span>Caleb · Nix · Asia/Tokyo</span>
       </footer>
     </div>
   );

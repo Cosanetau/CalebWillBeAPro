@@ -1,0 +1,16 @@
+{
+  "name": "Caleb Will Be A Pro",
+  "short_name": "CWBP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071422",
+  "theme_color": "#071422",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

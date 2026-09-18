@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
 import { foodKind, sessionForDate } from "../lib/program.js";
-import { rxLine } from "../data/sessions.js";
+import { rxLine, sessionItems } from "../data/sessions.js";
 import { mealTotals, targetsFor } from "../lib/nutrition.js";
 
 export default function TodayPage() {
@@ -62,11 +62,14 @@ export default function TodayPage() {
             <p>Rest day. Unmark it on Gym if you’re training.</p>
           ) : (
             <ul className="compact">
-              {session.items.slice(0, 4).map((item) => (
-                <li key={item.id}>
-                  {item.name} — {rxLine(item)}
-                </li>
-              ))}
+              {sessionItems(session)
+                .filter((item) => !String(item.id).startsWith("wu"))
+                .slice(0, 4)
+                .map((item) => (
+                  <li key={item.id}>
+                    {item.name} — {rxLine(item)}
+                  </li>
+                ))}
             </ul>
           )}
         </article>

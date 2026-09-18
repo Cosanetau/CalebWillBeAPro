@@ -329,6 +329,13 @@ textarea {
   font-style: normal;
   color: var(--muted);
 }
+.work-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
 
 .block { margin-top: 14px; }
 .block ul { margin: 8px 0 0; padding-left: 18px; }

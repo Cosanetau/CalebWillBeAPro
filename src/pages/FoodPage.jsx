@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { foods } from "../data/foods.js";
 import { MEAL_SLOTS, SUPPLEMENTS, mealTotals, remaining, targetsFor } from "../lib/nutrition.js";
 import { dayKind, getSession } from "../lib/program.js";
@@ -60,10 +59,9 @@ export default function FoodPage() {
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Food · {auth.username}</p>
-        <h1>{targets.label} fuel</h1>
+        <h1>{targets.label}</h1>
         <p className="lede">
-          {session.title} today. Targets move with game, train, and rest days so the gym week and
-          the plate stay on the same calendar.
+          {session.title}. Numbers move with the day — game, train, or off.
         </p>
       </section>
 
@@ -132,7 +130,7 @@ export default function FoodPage() {
 
       <section className="panel">
         <header className="panel-head">
-          <h2>Quick add · Japan-friendly</h2>
+          <h2>Stuff we actually eat</h2>
         </header>
         <div className="food-grid">
           {foods.map((food) => (
@@ -180,7 +178,7 @@ export default function FoodPage() {
             ))}
           </div>
           <button type="submit" className="btn">
-            <Plus size={16} /> Add meal
+            Add it
           </button>
         </form>
       </section>

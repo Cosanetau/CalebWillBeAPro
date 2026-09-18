@@ -32,11 +32,11 @@ export default function GymPage() {
   return (
     <div className="stack">
       <section className="hero-card compact">
-        <p className="kicker">Gym · Mon–Sun</p>
-        <h1>Hockey week in Tokyo</h1>
+        <p className="kicker">Gym</p>
+        <h1>This week</h1>
         <p className="lede">
-          Five training days. Two rest days, taken from this week’s games — not a fixed Monday or
-          Friday. Pillars: explosiveness, cardio, recoverability, strength.
+          Five sessions. Two rest days from the games — not a standing Monday off. Explosiveness,
+          cardio, recoverability, strength.
         </p>
       </section>
 

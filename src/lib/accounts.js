@@ -9,16 +9,22 @@ export function normalizeUsername(username) {
   return String(username || "").trim();
 }
 
+export function findAccount(username) {
+  const key = normalizeUsername(username).toLowerCase();
+  return ACCOUNTS.find((account) => account.username.toLowerCase() === key) || null;
+}
+
 export function usernameToEmail(username) {
   return `${normalizeUsername(username).toLowerCase()}@${LOGIN_EMAIL_DOMAIN}`;
 }
 
 export function roleForUsername(username) {
-  return normalizeUsername(username).toLowerCase() === "nix" ? "nutritionist" : "caleb";
+  return findAccount(username)?.role || "caleb";
 }
 
 export function loginFieldError({ username, password }) {
-  if (!normalizeUsername(username)) return "Enter your username.";
-  if (!String(password || "")) return "Enter your password.";
+  if (!normalizeUsername(username)) return "Put your name in.";
+  if (!findAccount(username)) return "It's Caleb or Nix.";
+  if (!String(password || "")) return "Put the password in.";
   return "";
 }

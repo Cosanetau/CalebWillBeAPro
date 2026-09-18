@@ -1,11 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { seedAccounts, signIn, signOut } from "./api.js";
-import { loadProfile, loadState, saveState } from "./data.js";
+import { fetchMe, loadState, saveState, signIn, signOut } from "./api.js";
 import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
 import { mondayOfWeek, tokyoISODate, weekDatesContaining } from "./tokyo.js";
 import { resolveRestDays } from "./restDays.js";
 import { planWeek } from "./program.js";
-import { supabase } from "./supabase.js";
 
 const AppContext = createContext(null);
 
@@ -16,39 +14,35 @@ export function AppProvider({ children }) {
   const [savedAt, setSavedAt] = useState(null);
   const timer = useRef(null);
 
-  const hydrate = useCallback(async (session) => {
-    if (!session) {
-      setAuth({ loading: false, ok: false, username: "", role: "caleb" });
-      setState(emptyState());
-      return;
-    }
-    const profile = await loadProfile();
-    setAuth({
-      loading: false,
-      ok: true,
-      username: profile?.username || "Caleb",
-      role: profile?.role || "caleb",
-    });
+  const hydrate = useCallback(async () => {
     try {
-      setState(await loadState());
-    } catch (error) {
-      setSaveError(error.message || "Could not load shared data.");
-      setState(emptyState());
+      const me = await fetchMe();
+      if (!me.ok) {
+        setAuth({ loading: false, ok: false, username: "", role: "caleb" });
+        setState(emptyState());
+        return;
+      }
+      setAuth({
+        loading: false,
+        ok: true,
+        username: me.user.username,
+        role: me.user.role,
+      });
+      try {
+        const loaded = await loadState();
+        setState(loaded.state);
+        setSaveError(loaded.warning || "");
+      } catch (error) {
+        setState(emptyState());
+        setSaveError(error.message || "Could not open the book.");
+      }
+    } catch {
+      setAuth({ loading: false, ok: false, username: "", role: "caleb" });
     }
   }, []);
 
   useEffect(() => {
-    seedAccounts();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      hydrate(session).catch((error) => {
-        setSaveError(error.message || "Could not load.");
-        setAuth({ loading: false, ok: false, username: "", role: "caleb" });
-      });
-    });
-
-    supabase.auth.getSession().then(({ data: sessionData }) => hydrate(sessionData.session));
-
-    return () => data.subscription.unsubscribe();
+    hydrate();
   }, [hydrate]);
 
   const persist = useCallback((next) => {
@@ -56,9 +50,9 @@ export function AppProvider({ children }) {
     timer.current = setTimeout(async () => {
       try {
         const saved = await saveState(next);
-        setState(saved);
+        setState(saved.state);
         setSavedAt(new Date());
-        setSaveError("");
+        setSaveError(saved.warning || "");
       } catch (error) {
         setSaveError(error.message || "Could not save.");
       }
@@ -77,7 +71,21 @@ export function AppProvider({ children }) {
   );
 
   const login = useCallback(async (username, password) => {
-    await signIn(username, password);
+    const result = await signIn(username, password);
+    setAuth({
+      loading: false,
+      ok: true,
+      username: result.user.username,
+      role: result.user.role,
+    });
+    try {
+      const loaded = await loadState();
+      setState(loaded.state);
+      setSaveError(loaded.warning || "");
+    } catch (error) {
+      setState(emptyState());
+      setSaveError(error.message || "Could not open the book.");
+    }
   }, []);
 
   const lock = useCallback(async () => {

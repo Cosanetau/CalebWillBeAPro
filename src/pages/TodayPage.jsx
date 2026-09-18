@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { CalendarPlus, Check, ChevronRight, Snowflake, Zap } from "lucide-react";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
 import { restStatus } from "../lib/restDays.js";
@@ -22,33 +21,29 @@ export default function TodayPage() {
   return (
     <div className="stack">
       <section className="hero-card">
-        <p className="kicker">Today in Tokyo</p>
+        <p className="kicker">Today</p>
         <h1>{formatTokyoDate(today)}</h1>
         <p className="lede">
           {session.title}. {planned?.reason}
         </p>
         <div className="chip-row">
-          <span className={`chip ${kind}`}>{kind === "game" ? "Game" : kind === "rest" ? "Rest" : "Train"}</span>
+          <span className={`chip ${kind}`}>{kind === "game" ? "Game" : kind === "rest" ? "Off gym" : "Train"}</span>
           {day.game ? (
             <span className="chip game">
-              Puck {day.game.time || "TBC"}
-              {day.game.opponent ? ` · ${day.game.opponent}` : ""}
+              {day.game.time || "TBC"}
+              {day.game.opponent ? ` vs ${day.game.opponent}` : ""}
             </span>
           ) : null}
-          <span className="chip">{weekdayLabel(today)}</span>
         </div>
       </section>
 
       {!rest.ok ? (
         <section className="alert-card">
-          <h2>This week still needs two rest days</h2>
-          <p>
-            Rest days come from this week’s games, not a standing weekday. Add games on the
-            calendar, or pick two rest days on Gym.
-          </p>
+          <h2>Still need two rest days</h2>
+          <p>They come from this week’s games, not a standing Monday off. Put the games in, or pick the days on Gym.</p>
           <div className="row-actions">
             <Link className="btn" to="/calendar">
-              <CalendarPlus size={16} /> Add games
+              Add games
             </Link>
             <Link className="btn ghost" to="/gym">
               Pick rest days
@@ -61,31 +56,25 @@ export default function TodayPage() {
         <article className="panel">
           <header className="panel-head">
             <h2>Gym</h2>
-            <Link to="/gym">
-              Open <ChevronRight size={16} />
-            </Link>
+            <Link to="/gym">open</Link>
           </header>
-          <p className="session-short">{session.short}</p>
           <p>{session.intent}</p>
           <ul className="compact">
             {(session.blocks?.[0]?.items || []).slice(0, 3).map((item) => (
               <li key={item.id}>
-                <Check size={14} /> {item.name} · {item.rx}
+                {item.name} — {item.rx}
               </li>
             ))}
           </ul>
-          <p className="muted">{session.duration}</p>
         </article>
 
         <article className="panel">
           <header className="panel-head">
             <h2>Food</h2>
-            <Link to="/food">
-              Open <ChevronRight size={16} />
-            </Link>
+            <Link to="/food">open</Link>
           </header>
           <p>
-            {targets.label} targets for {targets.weightKg} kg.
+            {targets.label} for {targets.weightKg} kg.
           </p>
           <div className="macro-row">
             <Macro label="kcal" value={totals.kcal} goal={targets.kcal} />
@@ -99,13 +88,12 @@ export default function TodayPage() {
 
       <section className="panel">
         <header className="panel-head">
-          <h2>This week’s pillars</h2>
-          <Link to="/calendar">Calendar</Link>
+          <h2>This week</h2>
+          <Link to="/calendar">calendar</Link>
         </header>
         <div className="pillar-grid">
           {pillars.map((pillar) => (
             <div key={pillar.id} className={`pillar ${pillar.covered ? "is-on" : ""}`}>
-              {pillar.id === "explosiveness" ? <Zap size={18} /> : <Snowflake size={18} />}
               <strong>{pillar.label}</strong>
               <span>{pillar.blurb}</span>
             </div>
@@ -115,7 +103,11 @@ export default function TodayPage() {
           {week.weekDates.map((date) => {
             const dayPlan = week.plan[date];
             return (
-              <Link key={date} to={dayKind(dayPlan.sessionId) === "rest" || dayKind(dayPlan.sessionId) === "game" ? "/calendar" : "/gym"} className={`week-cell ${date === today ? "is-today" : ""} ${dayKind(dayPlan.sessionId)}`}>
+              <Link
+                key={date}
+                to={dayKind(dayPlan.sessionId) === "rest" || dayKind(dayPlan.sessionId) === "game" ? "/calendar" : "/gym"}
+                className={`week-cell ${date === today ? "is-today" : ""} ${dayKind(dayPlan.sessionId)}`}
+              >
                 <b>{weekdayLabel(date)}</b>
                 <span>{date.slice(8)}</span>
                 <em>{getSession(dayPlan.sessionId).short}</em>
@@ -127,19 +119,17 @@ export default function TodayPage() {
 
       <section className="panel">
         <header className="panel-head">
-          <h2>Athlete notes</h2>
+          <h2>Notes</h2>
         </header>
         <label>
-          Body weight used for food targets (kg)
+          Weight we use for food (kg)
           <input
             type="number"
             min="50"
             max="140"
             step="0.1"
             value={state.profile.weightKg}
-            onChange={(event) =>
-              patch({ profile: { ...state.profile, weightKg: event.target.value } })
-            }
+            onChange={(event) => patch({ profile: { ...state.profile, weightKg: event.target.value } })}
           />
         </label>
         <label>
@@ -147,7 +137,7 @@ export default function TodayPage() {
           <input
             value={state.profile.team}
             onChange={(event) => patch({ profile: { ...state.profile, team: event.target.value } })}
-            placeholder="Club, rink, or league"
+            placeholder="Who you’re skating for"
           />
         </label>
         <label>

@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { CalendarDays, Dumbbell, Home, LogOut, UtensilsCrossed } from "lucide-react";
 import { tokyoClock, tokyoISODate, formatTokyoDate } from "../lib/tokyo.js";
 import { useApp } from "../lib/useApp.jsx";
 
 const links = [
-  { to: "/", label: "Today", icon: Home, end: true },
-  { to: "/gym", label: "Gym", icon: Dumbbell },
-  { to: "/food", label: "Food", icon: UtensilsCrossed },
-  { to: "/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/", label: "Today", end: true },
+  { to: "/gym", label: "Gym" },
+  { to: "/food", label: "Food" },
+  { to: "/calendar", label: "Calendar" },
 ];
 
 export default function Shell() {
@@ -34,17 +33,13 @@ export default function Shell() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-block">
-          <div className="mark" aria-hidden="true" />
-          <div>
-            <p className="brand-name">Caleb Will Be A Pro</p>
-            <p className="brand-sub">Ice hockey · Japan · Tokyo time</p>
-          </div>
+          <p className="brand-name">Caleb will be a pro</p>
+          <p className="brand-sub">hockey log · Tokyo</p>
         </div>
 
         <nav className="desktop-nav">
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.end} className={({ isActive }) => (isActive ? "is-active" : "")}>
-              <link.icon size={16} />
               {link.label}
             </NavLink>
           ))}
@@ -55,17 +50,15 @@ export default function Shell() {
             <strong>{tokyoClock(now)}</strong>
             <span>{formatTokyoDate(today, { weekday: "short", month: "short", year: undefined })}</span>
           </div>
-          <div className="who" title={auth.role === "nutritionist" ? "Nutritionist" : "Athlete"}>
-            {auth.username}
-          </div>
-          <button type="button" className="icon-btn" onClick={lock} title="Lock">
-            <LogOut size={18} />
+          <div className="who">{auth.username}</div>
+          <button type="button" className="text-btn" onClick={lock}>
+            Out
           </button>
         </div>
       </header>
 
       {saveError ? <p className="save-banner error">{saveError}</p> : null}
-      {showSaved && !saveError ? <p className="save-banner">Saved for both of you.</p> : null}
+      {showSaved && !saveError ? <p className="save-banner">Saved.</p> : null}
 
       <main className="page">
         <Outlet />
@@ -74,15 +67,14 @@ export default function Shell() {
       <nav className="mobile-nav">
         {links.map((link) => (
           <NavLink key={link.to} to={link.to} end={link.end} className={({ isActive }) => (isActive ? "is-active" : "")}>
-            <link.icon size={18} />
             {link.label}
           </NavLink>
         ))}
       </nav>
 
       <footer className="site-foot">
-        <span>calebwillbeapro.cosa.net.au</span>
-        <span>Caleb · Nix · Asia/Tokyo</span>
+        <span>Caleb + Nix</span>
+        <span>Tokyo time</span>
       </footer>
     </div>
   );

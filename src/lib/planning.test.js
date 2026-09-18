@@ -100,8 +100,9 @@ describe("login", () => {
     expect(usernameToEmail("Nix")).toBe("nix@login.cwbp.cosa.net.au");
     expect(roleForUsername("Nix")).toBe("nutritionist");
     expect(roleForUsername("Caleb")).toBe("caleb");
-    expect(loginFieldError({ username: "", password: "x" })).toMatch(/username/i);
+    expect(loginFieldError({ username: "", password: "x" })).toMatch(/name/i);
     expect(loginFieldError({ username: "Nix", password: "" })).toMatch(/password/i);
+    expect(loginFieldError({ username: "Sam", password: "secret" })).toMatch(/Caleb or Nix/i);
     expect(loginFieldError({ username: "Nix", password: "secret" })).toBe("");
   });
 });

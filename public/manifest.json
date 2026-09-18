@@ -1,10 +1,10 @@
 {
-  "name": "Caleb Will Be A Pro",
-  "short_name": "CWBP",
+  "name": "Caleb will be a pro",
+  "short_name": "Caleb",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#071422",
-  "theme_color": "#071422",
+  "background_color": "#efe4c8",
+  "theme_color": "#efe4c8",
   "lang": "en",
   "icons": [
     {

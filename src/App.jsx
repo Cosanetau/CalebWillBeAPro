@@ -13,8 +13,7 @@ export default function App() {
   if (auth.loading) {
     return (
       <div className="boot">
-        <div className="mark" aria-hidden="true" />
-        <p>Loading Tokyo time…</p>
+        <p>Hang on…</p>
       </div>
     );
   }

@@ -40,11 +40,10 @@ export default function CalendarPage() {
   return (
     <div className="stack">
       <section className="hero-card compact">
-        <p className="kicker">Calendar · Asia/Tokyo</p>
-        <h1>Games drive the week</h1>
+        <p className="kicker">Calendar</p>
+        <h1>The month</h1>
         <p className="lede">
-          Put this week’s games on the calendar. The two rest-from-gym days come from those games.
-          Gym and food sit on the same Tokyo week.
+          Put the games in. The two rest days come from those, in Tokyo time.
         </p>
       </section>
 

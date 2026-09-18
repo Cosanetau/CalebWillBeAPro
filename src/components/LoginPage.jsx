@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { loginFieldError } from "../lib/accounts.js";
-import { seedAccounts } from "../lib/api.js";
 import { useApp } from "../lib/useApp.jsx";
 
 export default function LoginPage() {
@@ -9,10 +8,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    seedAccounts();
-  }, []);
 
   async function onSubmit(event) {
     event.preventDefault();
@@ -26,7 +21,7 @@ export default function LoginPage() {
     try {
       await login(username, password);
     } catch (err) {
-      setError(err.message || "Could not sign in.");
+      setError(err.message || err.data?.error || "Could not get in.");
     } finally {
       setBusy(false);
     }
@@ -35,15 +30,14 @@ export default function LoginPage() {
   return (
     <main className="gate">
       <section className="gate-card">
-        <div className="mark lg" aria-hidden="true" />
-        <p className="kicker">Private · Tokyo time</p>
-        <h1>Caleb Will Be A Pro</h1>
-        <p className="lede">
-          Gym, food, and calendar for ice hockey in Japan. Sign in as Caleb or Nix.
-        </p>
+        <h1>
+          Caleb
+          <span>will be a pro</span>
+        </h1>
+        <p className="lede">Hockey log. Gym, food, games. Me and Nix.</p>
         <form onSubmit={onSubmit}>
           <label>
-            Username
+            Name
             <input
               autoFocus
               autoComplete="username"
@@ -63,7 +57,7 @@ export default function LoginPage() {
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button className="btn" type="submit" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "Hang on…" : "Come in"}
           </button>
         </form>
       </section>

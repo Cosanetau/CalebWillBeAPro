@@ -10,14 +10,18 @@ This repository is this site only.
 
 - **Gym, Monday–Sunday**, built for ice hockey in Japan: explosiveness, cardio, recoverability, and strength.
 - **Two rest days each week**, taken from **that week’s games**, not a standing weekday.
-- **Food / nutrition** with game, train, and rest targets, Japan-friendly quick adds, and Nix’s notes.
+- **Food / nutrition** with game, train, and rest targets, and Nix’s notes.
 - **Built-in calendar** in **Asia/Tokyo** time.
-- **Supabase logins:** Caleb and Nix each have a username and password.
+- **Logins:** Caleb and Nix each have a username and password.
 
 ## Logins
 
-- **Nix** — nutritionist. Password: `NixIsTheBest`
-- **Caleb** — set `CALEB_PASSWORD` in Vercel, then open `/api/seed` once.
+Sign in with the name, not an email.
+
+- **Nix** — password `NixIsTheBest`
+- **Caleb** — password from `CALEB_PASSWORD` on Vercel
+
+Login is checked on the server. It does not need a working Supabase auth user.
 
 ## Run
 
@@ -31,9 +35,10 @@ npm test
 npm run build
 ```
 
-## Supabase setup
+## Shared saving
 
 1. In the Supabase SQL editor, run `supabase/schema.sql`.
-2. On the Vercel project, set `SUPABASE_SERVICE_ROLE_KEY` (and `CALEB_PASSWORD` for Caleb).
-3. Open `/api/seed` once to create the users.
-4. Sign in on the site with username + password.
+2. On Vercel, set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `CALEB_PASSWORD`.
+3. Redeploy.
+
+If Supabase is missing, you can still log in. The book then saves on that server only.

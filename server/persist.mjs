@@ -121,9 +121,6 @@ export async function readAppState() {
       return readFallback();
     }
   }
-  if (!kvEnabled() && process.env.VERCEL) {
-    persistWarning = "Saving on this server only. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to share between phones.";
-  }
   return readFallback();
 }
 
@@ -136,9 +133,6 @@ export async function writeAppState(state) {
       persistWarning = error.message || "Could not save the shared book.";
       return writeFallback(state);
     }
-  }
-  if (!kvEnabled() && process.env.VERCEL) {
-    persistWarning = "Saving on this server only. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to share between phones.";
   }
   return writeFallback(state);
 }

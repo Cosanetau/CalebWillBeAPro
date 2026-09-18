@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
 import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { mealTotals, remaining, targetsFor, weekBuyList } from "./nutrition.js";
+import { formatWeightKg, mealTotals, remaining, scaleCatalogFood, targetsFor, weekBuyList, nutritionBits } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
-import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
+import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
 describe("week math", () => {
   it("treats Monday as the start of the training week", () => {
@@ -111,6 +111,51 @@ describe("week shop list", () => {
   });
 });
 
+describe("food book", () => {
+  it("scales a catalog food onto a day", () => {
+    const meal = scaleCatalogFood(
+      {
+        id: "chicken",
+        name: "Chicken",
+        brand: "Shop",
+        amount: 100,
+        unit: "g",
+        kcal: 165,
+        protein: 31,
+        carbs: 0,
+        fat: 3.6,
+      },
+      2
+    );
+    expect(meal).toMatchObject({
+      foodId: "chicken",
+      name: "Chicken",
+      amount: 200,
+      unit: "g",
+      kcal: 330,
+      protein: 62,
+      fat: 7.2,
+      servings: 2,
+    });
+  });
+
+  it("formats a weigh-in for a calendar square", () => {
+    expect(formatWeightKg("82.4")).toBe("82.4 kg");
+    expect(formatWeightKg(82)).toBe("82 kg");
+    expect(formatWeightKg("")).toBe("");
+    expect(formatWeightKg(0)).toBe("");
+  });
+
+  it("prints kcal, protein, carbs, and fat for Nix", () => {
+    expect(nutritionBits({ kcal: 330, protein: 62, carbs: 0, fat: 7.2 })).toEqual([
+      "330 kcal",
+      "P 62",
+      "C 0",
+      "F 7.2",
+    ]);
+  });
+});
+
 describe("login", () => {
   it("maps usernames to hidden login emails and roles", () => {
     expect(usernameToEmail("Nix")).toBe("nix@login.cwbp.cosa.net.au");
@@ -120,5 +165,7 @@ describe("login", () => {
     expect(loginFieldError({ username: "Nix", password: "" })).toMatch(/password/i);
     expect(loginFieldError({ username: "Sam", password: "secret" })).toMatch(/Caleb or Nix/i);
     expect(loginFieldError({ username: "Nix", password: "secret" })).toBe("");
+    expect(seesNutrition("nutritionist")).toBe(true);
+    expect(seesNutrition("caleb")).toBe(false);
   });
 });

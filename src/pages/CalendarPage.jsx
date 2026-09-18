@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useApp, useDay } from "../lib/useApp.jsx";
+import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import {
   formatDate,
   monthGrid,
@@ -8,17 +8,19 @@ import {
   weekdayLabel,
   WEEK_DAYS,
 } from "../lib/dates.js";
-import { collectRestMap, isRestDay } from "../lib/restDays.js";
+import { isRestDay } from "../lib/restDays.js";
 import { calendarKind, sessionForDate } from "../lib/program.js";
+import { formatWeightKg } from "../lib/nutrition.js";
 
 export default function CalendarPage() {
   const now = localParts();
   const today = localISODate();
   const [cursor, setCursor] = useState({ year: now.year, month: now.month });
   const [selected, setSelected] = useState(today);
-  const { state } = useApp();
+  const { state, patch } = useApp();
+  const week = useWeek(selected);
   const day = useDay(selected);
-  const restMap = collectRestMap(state);
+  const restMap = week.restMap;
   const cells = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor]);
   const monthLabel = new Intl.DateTimeFormat("en-GB", {
     month: "long",
@@ -26,11 +28,27 @@ export default function CalendarPage() {
     timeZone: "UTC",
   }).format(new Date(Date.UTC(cursor.year, cursor.month - 1, 1)));
   const session = sessionForDate(selected, restMap);
-  const kind = calendarKind({ isGame: Boolean(day.game), isRest: session.id === "rest" });
+  const selectedRest = isRestDay(selected, restMap);
+  const kind = calendarKind({ isGame: Boolean(day.game), isRest: selectedRest });
+
+  function pickDay(iso) {
+    setSelected(iso);
+    const [year, month] = iso.split("-").map(Number);
+    setCursor({ year, month });
+  }
 
   function shiftMonth(delta) {
     const date = new Date(Date.UTC(cursor.year, cursor.month - 1 + delta, 1));
     setCursor({ year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 });
+  }
+
+  function setGameOn(iso, on) {
+    patch((current) => {
+      const games = { ...current.games };
+      if (!on) delete games[iso];
+      else games[iso] = { time: "14:00", opponent: "", location: "", notes: "", ...(current.games[iso] || {}) };
+      return { ...current, games };
+    });
   }
 
   return (
@@ -38,7 +56,7 @@ export default function CalendarPage() {
       <section className="hero-card compact">
         <p className="kicker">Calendar</p>
         <h1>The month</h1>
-        <p className="lede">Games go here. Gym is the set week unless you mark rest.</p>
+        <p className="lede">Tick game or rest on the day. The Gym weigh-in sits under the date.</p>
       </section>
 
       <section className="panel">
@@ -60,44 +78,56 @@ export default function CalendarPage() {
           {cells.map((cell) => {
             const cellRest = isRestDay(cell.iso, restMap);
             const hasGame = Boolean(state.games[cell.iso]);
-            const hasFood = (state.foodLogs[cell.iso]?.meals || []).length > 0;
+            const weight = formatWeightKg(state.foodLogs[cell.iso]?.weightKg);
             const cellKind = calendarKind({ isGame: hasGame, isRest: cellRest });
             return (
-              <button
+              <div
                 key={cell.iso}
-                type="button"
+                role="button"
+                tabIndex={0}
                 className={`month-cell ${cell.inMonth ? "" : "is-out"} ${cell.iso === selected ? "is-selected" : ""} ${cell.iso === today ? "is-today" : ""} ${cellKind}`}
-                onClick={() => {
-                  setSelected(cell.iso);
-                  const [year, month] = cell.iso.split("-").map(Number);
-                  setCursor({ year, month });
+                onClick={() => pickDay(cell.iso)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    pickDay(cell.iso);
+                  }
                 }}
               >
-                <b>{Number(cell.iso.slice(8))}</b>
-                <span className="dots">
-                  {hasGame ? <i className="dot game" /> : null}
-                  {cellRest ? <i className="dot rest" /> : null}
-                  {!cellRest ? <i className="dot train" /> : null}
-                  {hasFood ? <i className="dot food" /> : null}
-                </span>
-              </button>
+                <b className="cell-date">{Number(cell.iso.slice(8))}</b>
+                {weight ? <span className="cell-weight">{weight}</span> : null}
+                <div
+                  className="cell-flags"
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={hasGame}
+                      onChange={(event) => {
+                        pickDay(cell.iso);
+                        setGameOn(cell.iso, event.target.checked);
+                      }}
+                    />
+                    Game
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={cellRest}
+                      onChange={(event) => {
+                        pickDay(cell.iso);
+                        week.setRest(cell.iso, event.target.checked);
+                      }}
+                    />
+                    Rest
+                  </label>
+                </div>
+              </div>
             );
           })}
         </div>
-        <p className="legend">
-          <span>
-            <i className="dot game" /> Game
-          </span>
-          <span>
-            <i className="dot rest" /> Rest
-          </span>
-          <span>
-            <i className="dot train" /> Gym
-          </span>
-          <span>
-            <i className="dot food" /> Food logged
-          </span>
-        </p>
       </section>
 
       <section className="panel">
@@ -109,17 +139,31 @@ export default function CalendarPage() {
           <span className={`chip ${kind}`}>{session.short}</span>
         </header>
         <p>{session.intent}</p>
+        {formatWeightKg(day.food.weightKg) ? (
+          <p className="muted">Weigh-in {formatWeightKg(day.food.weightKg)} from Gym.</p>
+        ) : null}
 
-        <div className="game-form">
+        <div className="day-options">
           <label className="check pill">
             <input
               type="checkbox"
               checked={Boolean(day.game)}
-              onChange={(event) => day.setGame(event.target.checked ? { time: "14:00" } : null)}
+              onChange={(event) => setGameOn(selected, event.target.checked)}
             />
             Game day
           </label>
-          {day.game ? (
+          <label className="check pill">
+            <input
+              type="checkbox"
+              checked={selectedRest}
+              onChange={(event) => week.setRest(selected, event.target.checked)}
+            />
+            Rest day
+          </label>
+        </div>
+
+        {day.game ? (
+          <div className="game-form">
             <div className="grid-2">
               <label>
                 Puck drop
@@ -152,8 +196,8 @@ export default function CalendarPage() {
                 />
               </label>
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
         <label>
           Day note

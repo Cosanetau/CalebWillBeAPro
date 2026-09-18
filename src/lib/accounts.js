@@ -22,6 +22,10 @@ export function roleForUsername(username) {
   return findAccount(username)?.role || "caleb";
 }
 
+export function seesNutrition(role) {
+  return role === "nutritionist";
+}
+
 export function loginFieldError({ username, password }) {
   if (!normalizeUsername(username)) return "Put your name in.";
   if (!findAccount(username)) return "It's Caleb or Nix.";

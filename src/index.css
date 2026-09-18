@@ -266,11 +266,17 @@ textarea {
   background: var(--red);
 }
 
+.week-shift {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
 .week-strip {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .week-cell {
@@ -367,8 +373,13 @@ textarea {
 .shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
 .shop-list li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--ink); padding: 8px 0; }
 .shop-list span { color: var(--muted); }
+.food-book { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.food-book li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--ink); padding: 8px 0; align-items: flex-start; }
+.food-book span { display: block; color: var(--muted); font-size: 13px; }
+.food-book .row-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .add-food-form { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); }
 .add-food-form .btn { margin-top: 12px; }
+.put-form { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); display: grid; gap: 10px; }
 .food-card {
   display: grid;
   gap: 4px;
@@ -390,11 +401,46 @@ textarea {
 }
 .month-dow { text-align: center; font-size: 12px; color: var(--muted); }
 .month-cell {
-  min-height: 64px;
+  min-height: 96px;
   padding: 6px;
   border: 1px solid var(--ink);
   background: #fffdf8;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cell-date { display: block; line-height: 1.1; }
+.cell-weight {
+  display: block;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.cell-flags {
+  display: grid;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.cell-flags label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--ink);
+  cursor: pointer;
+}
+.cell-flags input { width: auto; margin: 0; flex: none; }
+.day-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
 }
 .month-cell.is-out { opacity: 0.35; }
 .month-cell.is-selected { background: #efe0b8; }
@@ -403,7 +449,7 @@ textarea {
 .month-cell.rest { background: var(--rest); }
 .month-cell.train { background: var(--train); }
 
-.dots { display: flex; gap: 4px; margin-top: 8px; }
+.dots { display: flex; gap: 4px; margin-top: auto; padding-top: 8px; }
 .dot { width: 7px; height: 7px; background: var(--ink); display: inline-block; }
 .dot.game { background: var(--red); }
 .dot.rest { background: #3d6b32; }

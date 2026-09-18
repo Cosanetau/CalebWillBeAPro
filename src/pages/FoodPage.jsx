@@ -4,6 +4,7 @@ import {
   MEAL_SLOTS,
   amountLine,
   asRecipe,
+  mealSlot,
   mealTotals,
   remaining,
   resolveTargets,
@@ -47,7 +48,7 @@ export default function FoodPage() {
         ...day.food.meals,
         {
           id: newId(),
-          slot: pick.slot,
+          slot: mealSlot(pick.slot),
           actor,
           ...scaled,
         },
@@ -169,7 +170,7 @@ export default function FoodPage() {
         </header>
         {day.food.meals.length ? (
           MEAL_SLOTS.map((slot) => {
-            const items = day.food.meals.filter((meal) => meal.slot === slot.id);
+            const items = day.food.meals.filter((meal) => mealSlot(meal.slot) === slot.id);
             if (!items.length) return null;
             return (
               <div key={slot.id} className="meal-slot">

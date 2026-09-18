@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionForDate, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits } from "./nutrition.js";
+import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -148,6 +148,17 @@ describe("week shop list", () => {
 });
 
 describe("cookbook", () => {
+  it("uses breakfast, lunch, dinner, and snack", () => {
+    expect(MEAL_SLOTS.map((slot) => slot.id)).toEqual(["breakfast", "lunch", "dinner", "snack"]);
+    expect(mealSlot("breakfast")).toBe("breakfast");
+    expect(mealSlot("lunch")).toBe("lunch");
+    expect(mealSlot("dinner")).toBe("dinner");
+    expect(mealSlot("snack")).toBe("snack");
+    expect(mealSlot("pre")).toBe("snack");
+    expect(mealSlot("post")).toBe("snack");
+    expect(mealSlot("evening")).toBe("snack");
+  });
+
   it("scales a recipe and its ingredients onto a day", () => {
     const meal = scaleRecipe(
       {

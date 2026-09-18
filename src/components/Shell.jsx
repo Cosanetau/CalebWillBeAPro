@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { formatDate, localClock, localISODate, localTimeZone } from "../lib/dates.js";
 import { useApp } from "../lib/useApp.jsx";
+import TermsFoot from "./TermsFoot.jsx";
 
 const links = [
   { to: "/", label: "Today", end: true },
@@ -74,9 +75,7 @@ export default function Shell() {
         ))}
       </nav>
 
-      <footer className="site-foot">
-        <span>Caleb + Nix</span>
-      </footer>
+      <TermsFoot />
     </div>
   );
 }

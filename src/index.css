@@ -266,11 +266,17 @@ textarea {
   background: var(--red);
 }
 
+.week-shift {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
 .week-strip {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .week-cell {
@@ -405,10 +411,12 @@ textarea {
 }
 .cell-weight {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: var(--serif);
-  font-size: 12px;
-  line-height: 1.1;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 .month-cell.is-out { opacity: 0.35; }
 .month-cell.is-selected { background: #efe0b8; }

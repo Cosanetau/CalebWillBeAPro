@@ -10,7 +10,7 @@ import {
   weekBuyList,
 } from "../lib/nutrition.js";
 import { foodKind, getSession } from "../lib/program.js";
-import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
+import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { emptyCatalogFood, newId } from "../lib/state.js";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 
@@ -116,6 +116,7 @@ export default function FoodPage() {
         },
       ],
     });
+    setPick({ ...pick, servings: "1" });
   }
 
   function removeMeal(id) {
@@ -259,6 +260,14 @@ export default function FoodPage() {
         )}
       </section>
 
+      <div className="week-shift">
+        <button type="button" className="text-btn" onClick={() => setSelected(addDaysISO(selected, -7))}>
+          Last week
+        </button>
+        <button type="button" className="text-btn" onClick={() => setSelected(addDaysISO(selected, 7))}>
+          Next week
+        </button>
+      </div>
       <div className="week-strip">
         {week.weekDates.map((date) => (
           <button

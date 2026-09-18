@@ -55,7 +55,7 @@ export default function AccessGate() {
               : "Same word for both of you. This is not an email login."}
           </p>
           {error ? <p className="form-error">{error}</p> : null}
-          <button type="submit" disabled={busy}>
+          <button className="btn" type="submit" disabled={busy}>
             {busy ? "Checking…" : creating ? "Lock it in" : "Open"}
           </button>
         </form>

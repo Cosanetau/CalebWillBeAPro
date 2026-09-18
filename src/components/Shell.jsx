@@ -14,11 +14,19 @@ const links = [
 export default function Shell() {
   const { actor, setActor, lock, saveError, savedAt } = useApp();
   const [now, setNow] = useState(() => new Date());
+  const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 15000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (!savedAt) return undefined;
+    setShowSaved(true);
+    const timer = setTimeout(() => setShowSaved(false), 2500);
+    return () => clearTimeout(timer);
+  }, [savedAt]);
 
   const today = tokyoISODate(now);
 
@@ -66,7 +74,7 @@ export default function Shell() {
       </header>
 
       {saveError ? <p className="save-banner error">{saveError}</p> : null}
-      {savedAt && !saveError ? <p className="save-banner">Saved for both of you.</p> : null}
+      {showSaved && !saveError ? <p className="save-banner">Saved for both of you.</p> : null}
 
       <main className="page">
         <Outlet />

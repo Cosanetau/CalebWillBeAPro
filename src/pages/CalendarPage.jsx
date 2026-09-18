@@ -13,12 +13,6 @@ import {
 import { resolveRestDays, restStatus } from "../lib/restDays.js";
 import { dayKind, getSession, planWeek } from "../lib/program.js";
 
-function planForDate(iso, state) {
-  const weekDates = weekDatesFromMonday(mondayOfWeek(iso));
-  const restDays = resolveRestDays(weekDates, state.games, state.restOverrides);
-  return planWeek({ weekDates, restDays, games: state.games })[iso];
-}
-
 export default function CalendarPage() {
   const now = tokyoParts();
   const today = tokyoISODate();
@@ -71,8 +65,11 @@ export default function CalendarPage() {
             </div>
           ))}
           {cells.map((cell) => {
-            const cellPlan = planForDate(cell.iso, state);
-            const kind = dayKind(cellPlan?.sessionId);
+            const weekDates = weekDatesFromMonday(mondayOfWeek(cell.iso));
+            const restDays = resolveRestDays(weekDates, state.games, state.restOverrides);
+            const restOk = restDays.length === 2;
+            const cellPlan = planWeek({ weekDates, restDays, games: state.games })[cell.iso];
+            const kind = restOk || state.games[cell.iso] ? dayKind(cellPlan?.sessionId) : "";
             const hasGame = Boolean(state.games[cell.iso]);
             const hasFood = (state.foodLogs[cell.iso]?.meals || []).length > 0;
             return (
@@ -89,8 +86,8 @@ export default function CalendarPage() {
                 <b>{Number(cell.iso.slice(8))}</b>
                 <span className="dots">
                   {hasGame ? <i className="dot game" /> : null}
-                  {kind === "rest" ? <i className="dot rest" /> : null}
-                  {kind === "train" ? <i className="dot train" /> : null}
+                  {restOk && kind === "rest" ? <i className="dot rest" /> : null}
+                  {restOk && kind === "train" ? <i className="dot train" /> : null}
                   {hasFood ? <i className="dot food" /> : null}
                 </span>
               </button>

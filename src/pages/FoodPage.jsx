@@ -8,10 +8,12 @@ import {
   scaleCatalogFood,
   targetsFor,
   weekBuyList,
+  nutritionBits,
 } from "../lib/nutrition.js";
 import { foodKind, getSession } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { emptyCatalogFood, newId } from "../lib/state.js";
+import { seesNutrition } from "../lib/accounts.js";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 
 export default function FoodPage() {
@@ -22,6 +24,7 @@ export default function FoodPage() {
   const [draft, setDraft] = useState(emptyCatalogFood());
   const [pick, setPick] = useState({ foodId: "", servings: "1", slot: "dinner" });
   const { state, actor, auth, patch } = useApp();
+  const showMacros = seesNutrition(auth.role);
   const week = useWeek(selected);
   const day = useDay(selected);
   const session = getSession(week.plan[selected]?.sessionId);
@@ -72,16 +75,17 @@ export default function FoodPage() {
   function saveFood(event) {
     event.preventDefault();
     if (!draft.name.trim()) return;
+    const existing = editingId ? (state.foods || []).find((food) => food.id === editingId) : null;
     const item = {
       id: editingId || newId(),
       name: draft.name.trim(),
       brand: draft.brand.trim(),
       amount: Number(draft.amount || 0),
       unit: draft.unit,
-      kcal: Number(draft.kcal || 0),
-      protein: Number(draft.protein || 0),
-      carbs: Number(draft.carbs || 0),
-      fat: Number(draft.fat || 0),
+      kcal: showMacros ? Number(draft.kcal || 0) : Number(existing?.kcal || 0),
+      protein: showMacros ? Number(draft.protein || 0) : Number(existing?.protein || 0),
+      carbs: showMacros ? Number(draft.carbs || 0) : Number(existing?.carbs || 0),
+      fat: showMacros ? Number(draft.fat || 0) : Number(existing?.fat || 0),
       notes: draft.notes.trim(),
     };
     const next = [...(state.foods || [])];
@@ -128,7 +132,10 @@ export default function FoodPage() {
       <section className="hero-card compact">
         <p className="kicker">Food · {auth.username}</p>
         <h1>The kitchen</h1>
-        <p className="lede">Keep a food book you can edit. Pick from it onto whatever day you’re cooking. The shop list fills itself for the week.</p>
+        <p className="lede">
+          Keep a food book you can edit. Pick from it onto whatever day you’re cooking. The shop list fills itself for the week.
+          {showMacros ? " You can see calories, protein, carbs, and fat." : ""}
+        </p>
       </section>
 
       <section className="panel">
@@ -146,7 +153,7 @@ export default function FoodPage() {
                 <div>
                   <strong>{food.name}</strong>
                   <span>
-                    {[amountLine(food) && `per ${amountLine(food)}`, food.brand, food.kcal ? `${food.kcal} kcal` : "", `P ${food.protein || 0}`, `C ${food.carbs || 0}`, `F ${food.fat || 0}`]
+                    {[amountLine(food) && `per ${amountLine(food)}`, food.brand, ...(showMacros ? nutritionBits(food) : [])]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
@@ -209,20 +216,22 @@ export default function FoodPage() {
                 </select>
               </label>
             </div>
-            <div className="macro-inputs">
-              {["kcal", "protein", "carbs", "fat"].map((key) => (
-                <label key={key}>
-                  {key}
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={draft[key]}
-                    onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
-                  />
-                </label>
-              ))}
-            </div>
+            {showMacros ? (
+              <div className="macro-inputs">
+                {["kcal", "protein", "carbs", "fat"].map((key) => (
+                  <label key={key}>
+                    {key}
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={draft[key]}
+                      onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
+                    />
+                  </label>
+                ))}
+              </div>
+            ) : null}
             <label>
               Notes
               <textarea
@@ -250,7 +259,7 @@ export default function FoodPage() {
                 <strong>{item.name}</strong>
                 <span>
                   {amountLine(item) || "as added"}
-                  {item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
+                  {showMacros && item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
                 </span>
               </li>
             ))}
@@ -290,13 +299,19 @@ export default function FoodPage() {
         <header className="panel-head">
           <h2>{formatDate(selected, { year: undefined })}</h2>
         </header>
-        <p className="muted">{targets.label}. {targets.note}</p>
-        <div className="macro-row large">
-          <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
-          <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
-          <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
-          <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
-        </div>
+        {showMacros ? (
+          <>
+            <p className="muted">{targets.label}. {targets.note}</p>
+            <div className="macro-row large">
+              <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
+              <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
+              <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
+              <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
+            </div>
+          </>
+        ) : (
+          <p className="muted">{targets.label}.</p>
+        )}
 
         {foods.length ? (
           <form className="put-form" onSubmit={putOnDay}>
@@ -368,10 +383,7 @@ export default function FoodPage() {
                             meal.servings && meal.servings !== 1 ? `${meal.servings} servings` : "",
                             amountLine(meal),
                             meal.brand,
-                            meal.kcal ? `${meal.kcal} kcal` : "",
-                            `P ${meal.protein || 0}`,
-                            `C ${meal.carbs || 0}`,
-                            `F ${meal.fat || 0}`,
+                            ...(showMacros ? nutritionBits(meal) : []),
                             meal.actor === "nutritionist" ? "Nix" : "",
                           ]
                             .filter(Boolean)

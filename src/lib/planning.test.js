@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
 import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealTotals, remaining, scaleCatalogFood, targetsFor, weekBuyList } from "./nutrition.js";
+import { formatWeightKg, mealTotals, remaining, scaleCatalogFood, targetsFor, weekBuyList, nutritionBits } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
-import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
+import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
 describe("week math", () => {
   it("treats Monday as the start of the training week", () => {
@@ -145,6 +145,15 @@ describe("food book", () => {
     expect(formatWeightKg("")).toBe("");
     expect(formatWeightKg(0)).toBe("");
   });
+
+  it("prints kcal, protein, carbs, and fat for Nix", () => {
+    expect(nutritionBits({ kcal: 330, protein: 62, carbs: 0, fat: 7.2 })).toEqual([
+      "330 kcal",
+      "P 62",
+      "C 0",
+      "F 7.2",
+    ]);
+  });
 });
 
 describe("login", () => {
@@ -156,5 +165,7 @@ describe("login", () => {
     expect(loginFieldError({ username: "Nix", password: "" })).toMatch(/password/i);
     expect(loginFieldError({ username: "Sam", password: "secret" })).toMatch(/Caleb or Nix/i);
     expect(loginFieldError({ username: "Nix", password: "secret" })).toBe("");
+    expect(seesNutrition("nutritionist")).toBe(true);
+    expect(seesNutrition("caleb")).toBe(false);
   });
 });

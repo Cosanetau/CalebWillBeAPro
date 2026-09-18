@@ -121,6 +121,15 @@ export function amountLine(item) {
   return `${amount} ${item.unit}`;
 }
 
+export function nutritionBits(item) {
+  return [
+    item.kcal ? `${item.kcal} kcal` : "",
+    `P ${item.protein || 0}`,
+    `C ${item.carbs || 0}`,
+    `F ${item.fat || 0}`,
+  ].filter(Boolean);
+}
+
 export function scaleCatalogFood(food, servings = 1) {
   const factor = Number(servings);
   const n = Number.isFinite(factor) && factor > 0 ? factor : 1;

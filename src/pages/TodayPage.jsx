@@ -4,9 +4,11 @@ import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { foodKind, sessionForDate } from "../lib/program.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { mealTotals, targetsFor } from "../lib/nutrition.js";
+import { seesNutrition } from "../lib/accounts.js";
 
 export default function TodayPage() {
-  const { state, patch } = useApp();
+  const { state, patch, auth } = useApp();
+  const showMacros = seesNutrition(auth.role);
   const today = localISODate();
   const week = useWeek(today);
   const day = useDay(today);
@@ -79,15 +81,25 @@ export default function TodayPage() {
             <h2>Food</h2>
             <Link to="/food">open</Link>
           </header>
-          <p>
-            {targets.label} for {targets.weightKg} kg.
-          </p>
-          <div className="macro-row">
-            <Macro label="kcal" value={totals.kcal} goal={targets.kcal} />
-            <Macro label="P" value={totals.protein} goal={targets.protein} />
-            <Macro label="C" value={totals.carbs} goal={targets.carbs} />
-            <Macro label="F" value={totals.fat} goal={targets.fat} />
-          </div>
+          {showMacros ? (
+            <>
+              <p>
+                {targets.label} for {targets.weightKg} kg.
+              </p>
+              <div className="macro-row">
+                <Macro label="kcal" value={totals.kcal} goal={targets.kcal} />
+                <Macro label="P" value={totals.protein} goal={targets.protein} />
+                <Macro label="C" value={totals.carbs} goal={targets.carbs} />
+                <Macro label="F" value={totals.fat} goal={targets.fat} />
+              </div>
+            </>
+          ) : (
+            <p>
+              {day.food.meals.length
+                ? `${day.food.meals.length} on the day.`
+                : "Nothing logged yet."}
+            </p>
+          )}
         </article>
       </section>
 

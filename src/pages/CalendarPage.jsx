@@ -17,7 +17,7 @@ export default function CalendarPage() {
   const today = localISODate();
   const [cursor, setCursor] = useState({ year: now.year, month: now.month });
   const [selected, setSelected] = useState(today);
-  const { state, patch } = useApp();
+  const { state } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
   const restMap = week.restMap;
@@ -27,9 +27,9 @@ export default function CalendarPage() {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(Date.UTC(cursor.year, cursor.month - 1, 1)));
-  const session = sessionForDate(selected, restMap);
+  const session = sessionForDate(selected, restMap, state.games);
   const selectedRest = isRestDay(selected, restMap);
-  const kind = calendarKind({ isGame: Boolean(day.game), isRest: selectedRest });
+  const kind = calendarKind({ isGame: Boolean(day.game), isRest: selectedRest && !day.game });
 
   function pickDay(iso) {
     setSelected(iso);
@@ -43,12 +43,12 @@ export default function CalendarPage() {
   }
 
   function setGameOn(iso, on) {
-    patch((current) => {
-      const games = { ...current.games };
-      if (!on) delete games[iso];
-      else games[iso] = { time: "14:00", opponent: "", location: "", notes: "", ...(current.games[iso] || {}) };
-      return { ...current, games };
-    });
+    week.setGameDay(iso, on);
+  }
+
+  function setRestOn(iso, on) {
+    if (state.games[iso] && on) return;
+    week.setRest(iso, on);
   }
 
   return (
@@ -115,10 +115,11 @@ export default function CalendarPage() {
                   <label>
                     <input
                       type="checkbox"
-                      checked={cellRest}
+                      checked={cellRest && !hasGame}
+                      disabled={hasGame}
                       onChange={(event) => {
                         pickDay(cell.iso);
-                        week.setRest(cell.iso, event.target.checked);
+                        setRestOn(cell.iso, event.target.checked);
                       }}
                     />
                     Rest
@@ -155,8 +156,9 @@ export default function CalendarPage() {
           <label className="check pill">
             <input
               type="checkbox"
-              checked={selectedRest}
-              onChange={(event) => week.setRest(selected, event.target.checked)}
+              checked={selectedRest && !day.game}
+              disabled={Boolean(day.game)}
+              onChange={(event) => setRestOn(selected, event.target.checked)}
             />
             Rest day
           </label>

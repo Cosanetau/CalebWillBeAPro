@@ -101,27 +101,31 @@ export function weekBuyList(weekDates, foodLogs = {}) {
   const map = new Map();
   for (const date of weekDates) {
     for (const meal of foodLogs[date]?.meals || []) {
-      const name = String(meal.name || "").trim();
-      if (!name) continue;
-      const unit = String(meal.unit || "").trim();
-      const key = `${name.toLowerCase()}|${unit.toLowerCase()}`;
-      const current = map.get(key) || {
-        name,
-        unit,
-        amount: 0,
-        kcal: 0,
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        days: [],
-      };
-      current.amount += Number(meal.amount || 0);
-      current.kcal += Number(meal.kcal || 0);
-      current.protein += Number(meal.protein || 0);
-      current.carbs += Number(meal.carbs || 0);
-      current.fat += Number(meal.fat || 0);
-      if (!current.days.includes(date)) current.days.push(date);
-      map.set(key, current);
+      const parts =
+        Array.isArray(meal.ingredients) && meal.ingredients.length ? meal.ingredients : [meal];
+      for (const part of parts) {
+        const name = String(part.name || "").trim();
+        if (!name) continue;
+        const unit = String(part.unit || "").trim();
+        const key = `${name.toLowerCase()}|${unit.toLowerCase()}`;
+        const current = map.get(key) || {
+          name,
+          unit,
+          amount: 0,
+          kcal: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          days: [],
+        };
+        current.amount += Number(part.amount || 0);
+        current.kcal += Number(part.kcal || 0);
+        current.protein += Number(part.protein || 0);
+        current.carbs += Number(part.carbs || 0);
+        current.fat += Number(part.fat || 0);
+        if (!current.days.includes(date)) current.days.push(date);
+        map.set(key, current);
+      }
     }
   }
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
@@ -144,22 +148,72 @@ export function nutritionBits(item) {
   ].filter(Boolean);
 }
 
-export function scaleCatalogFood(food, servings = 1) {
+export function asRecipe(food) {
+  if (!food) return { name: "", notes: "", ingredients: [] };
+  if (Array.isArray(food.ingredients)) {
+    return {
+      id: food.id,
+      name: String(food.name || "").trim(),
+      notes: String(food.notes || "").trim(),
+      ingredients: food.ingredients.map((ing) => ({
+        id: ing.id,
+        name: String(ing.name || "").trim(),
+        amount: ing.amount ?? "",
+        unit: ing.unit || "g",
+        kcal: ing.kcal ?? "",
+        protein: ing.protein ?? "",
+        carbs: ing.carbs ?? "",
+        fat: ing.fat ?? "",
+      })),
+    };
+  }
+  const leftoverName = String(food.brand || food.name || "").trim();
+  return {
+    id: food.id,
+    name: String(food.name || "").trim(),
+    notes: String(food.notes || "").trim(),
+    ingredients: leftoverName
+      ? [
+          {
+            id: `${food.id || "ing"}-1`,
+            name: leftoverName,
+            amount: food.amount ?? "",
+            unit: food.unit || "g",
+            kcal: food.kcal ?? "",
+            protein: food.protein ?? "",
+            carbs: food.carbs ?? "",
+            fat: food.fat ?? "",
+          },
+        ]
+      : [],
+  };
+}
+
+export function recipeTotals(recipe) {
+  return mealTotals(asRecipe(recipe).ingredients);
+}
+
+export function scaleRecipe(recipe, servings = 1) {
   const factor = Number(servings);
   const n = Number.isFinite(factor) && factor > 0 ? factor : 1;
   const scale = (value) => Math.round(Number(value || 0) * n * 10) / 10;
+  const base = asRecipe(recipe);
+  const ingredients = base.ingredients.map((ing) => ({
+    ...ing,
+    amount: scale(ing.amount),
+    kcal: scale(ing.kcal),
+    protein: scale(ing.protein),
+    carbs: scale(ing.carbs),
+    fat: scale(ing.fat),
+  }));
+  const totals = mealTotals(ingredients);
   return {
-    foodId: food.id || "",
-    name: String(food.name || "").trim(),
-    brand: String(food.brand || "").trim(),
-    unit: String(food.unit || "").trim(),
-    notes: String(food.notes || "").trim(),
+    foodId: base.id || "",
+    name: base.name,
+    notes: base.notes,
     servings: n,
-    amount: scale(food.amount),
-    kcal: scale(food.kcal),
-    protein: scale(food.protein),
-    carbs: scale(food.carbs),
-    fat: scale(food.fat),
+    ingredients,
+    ...totals,
   };
 }
 

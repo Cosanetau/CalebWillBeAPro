@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { fetchMe, loadState, saveState, signIn, signOut } from "./api.js";
 import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
 import { mondayOfWeek, localISODate, weekDatesContaining } from "./dates.js";
-import { collectRestMap, restDatesInWeek } from "./restDays.js";
+import { collectRestMap, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { planWeek } from "./program.js";
 
 const AppContext = createContext(null);
@@ -129,17 +129,19 @@ export function useWeek(isoDate = localISODate()) {
   const weekGames = weekDates.filter((date) => state.games[date]);
 
   function toggleRest(date) {
-    const restDays = { ...restMap };
-    if (restDays[date]) delete restDays[date];
-    else restDays[date] = true;
-    patch({ restDays });
+    if (state.games[date]) return;
+    patch((current) => ({ ...current, ...applyGameRest(current, date, "rest", !restMap[date]) }));
   }
 
   function setRest(date, on) {
-    const restDays = { ...restMap };
-    if (on) restDays[date] = true;
-    else delete restDays[date];
-    patch({ restDays });
+    patch((current) => {
+      if (on && current.games?.[date]) return current;
+      return { ...current, ...applyGameRest(current, date, "rest", on) };
+    });
+  }
+
+  function setGameDay(date, on) {
+    patch((current) => ({ ...current, ...applyGameRest(current, date, "game", on) }));
   }
 
   return {
@@ -151,6 +153,7 @@ export function useWeek(isoDate = localISODate()) {
     weekGames,
     toggleRest,
     setRest,
+    setGameDay,
   };
 }
 

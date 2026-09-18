@@ -12,7 +12,8 @@ export default function GymPage() {
   const week = useWeek(selected);
   const day = useDay(selected);
   const rest = isRestDay(selected, week.restMap);
-  const session = sessionForDate(selected, week.restMap);
+  const isGame = Boolean(day.game);
+  const session = sessionForDate(selected, week.restMap, state.games);
   const weighIn = day.food.weightKg;
   const items = sessionItems(session);
 
@@ -42,10 +43,10 @@ export default function GymPage() {
       <section className="hero-card compact">
         <p className="kicker">Gym</p>
         <h1>
-          {weekdayLabel(selected)} · {session.short}
+          {weekdayLabel(selected)} · {isGame ? "Game" : session.short}
         </h1>
         <p className="lede">
-          Proven ice-hockey week. We do the day’s work unless you mark rest.
+          {isGame ? "No gym today. Game day only." : "Proven ice-hockey week. We do the day’s work unless you mark rest."}
         </p>
       </section>
 
@@ -63,10 +64,14 @@ export default function GymPage() {
               placeholder="Today’s number"
             />
           </label>
-          <label className="check pill rest-toggle">
-            <input type="checkbox" checked={rest} onChange={() => week.toggleRest(selected)} />
-            Rest day
-          </label>
+          {isGame ? (
+            <p className="muted">Playing today. Rest is off.</p>
+          ) : (
+            <label className="check pill rest-toggle">
+              <input type="checkbox" checked={rest} onChange={() => week.toggleRest(selected)} />
+              Rest day
+            </label>
+          )}
         </div>
       </section>
 
@@ -76,8 +81,8 @@ export default function GymPage() {
         </header>
         <div className="week-strip">
           {week.weekDates.map((date) => {
-            const daySession = sessionForDate(date, week.restMap);
-            const kind = daySession.id === "rest" ? "rest" : "train";
+            const daySession = sessionForDate(date, week.restMap, state.games);
+            const kind = state.games[date] ? "game" : daySession.id === "rest" ? "rest" : "train";
             return (
               <button
                 key={date}
@@ -103,7 +108,9 @@ export default function GymPage() {
         </header>
         <p>{session.intent}</p>
 
-        {rest ? (
+        {isGame ? (
+          <p className="muted">No gym today. Only the game.</p>
+        ) : rest ? (
           <p className="muted">Off gym today. Uncheck rest if you’re training.</p>
         ) : (
           (session.sections || []).map((block) => (
@@ -143,16 +150,18 @@ export default function GymPage() {
           ))
         )}
 
-        <label>
-          How it felt
-          <input
-            value={day.workout.notes}
-            onChange={(event) => day.setWorkout({ notes: event.target.value, sessionId: session.id })}
-            placeholder={actor === "nutritionist" ? "Nix’s gym note" : "Caleb’s gym note"}
-          />
-        </label>
+        {isGame || rest ? null : (
+          <label>
+            How it felt
+            <input
+              value={day.workout.notes}
+              onChange={(event) => day.setWorkout({ notes: event.target.value, sessionId: session.id })}
+              placeholder={actor === "nutritionist" ? "Nix’s gym note" : "Caleb’s gym note"}
+            />
+          </label>
+        )}
         <p className="muted">
-          {rest ? "Rest." : `${completedCount} of ${items.length} done.`} Logged as {auth.username}.
+          {isGame ? "Game day. No gym." : rest ? "Rest." : `${completedCount} of ${items.length} done.`} Logged as {auth.username}.
         </p>
       </section>
     </div>

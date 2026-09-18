@@ -30,17 +30,23 @@ export function newId() {
   return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-export function emptyCatalogFood() {
+export function emptyIngredient() {
   return {
     name: "",
-    brand: "",
     amount: "",
     unit: "g",
     kcal: "",
     protein: "",
     carbs: "",
     fat: "",
+  };
+}
+
+export function emptyRecipe() {
+  return {
+    name: "",
     notes: "",
+    ingredients: [emptyIngredient()],
   };
 }
 

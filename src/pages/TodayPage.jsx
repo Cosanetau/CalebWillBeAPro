@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useDay, useWeek } from "../lib/useApp.jsx";
 import { formatDate, localISODate } from "../lib/dates.js";
 import { dayTypeLabel } from "../lib/program.js";
-import { amountLine, MEAL_SLOTS } from "../lib/nutrition.js";
+import { amountLine, MEAL_SLOTS, mealSlot } from "../lib/nutrition.js";
 
 export default function TodayPage() {
   const today = localISODate();
@@ -26,7 +26,7 @@ export default function TodayPage() {
         </header>
         {day.food.meals.length ? (
           MEAL_SLOTS.map((slot) => {
-            const items = day.food.meals.filter((meal) => meal.slot === slot.id);
+            const items = day.food.meals.filter((meal) => mealSlot(meal.slot) === slot.id);
             if (!items.length) return null;
             return (
               <div key={slot.id} className="meal-slot">

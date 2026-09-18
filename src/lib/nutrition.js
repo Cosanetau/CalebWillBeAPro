@@ -63,6 +63,12 @@ export function mealTotals(meals = []) {
   );
 }
 
+export function inForDayLine(value, goal, unit = "") {
+  const eaten = Math.round(Number(value) || 0);
+  const need = Math.round(Number(goal) || 0);
+  return unit ? `${eaten} ${unit}/${need}` : `${eaten}/${need}`;
+}
+
 export function emptyNutritionTargets() {
   return { kcal: 3600, protein: 160, carbs: 490, fat: 80 };
 }
@@ -89,11 +95,16 @@ export function remaining(targets, totals) {
 export const MEAL_SLOTS = [
   { id: "breakfast", label: "Breakfast" },
   { id: "lunch", label: "Lunch" },
-  { id: "pre", label: "Pre-session / pre-game" },
-  { id: "post", label: "Post-session / post-game" },
   { id: "dinner", label: "Dinner" },
-  { id: "evening", label: "Evening" },
+  { id: "snack", label: "Snack" },
 ];
+
+const KNOWN_SLOTS = new Set(MEAL_SLOTS.map((slot) => slot.id));
+
+export function mealSlot(slot) {
+  if (KNOWN_SLOTS.has(slot)) return slot;
+  return "snack";
+}
 
 export const FOOD_UNITS = ["g", "kg", "ml", "L", "piece", "cup", "tbsp", "tsp", "pack"];
 

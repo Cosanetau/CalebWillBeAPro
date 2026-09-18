@@ -63,6 +63,20 @@ export function mealTotals(meals = []) {
   );
 }
 
+export function emptyNutritionTargets() {
+  return { kcal: 3600, protein: 160, carbs: 490, fat: 80 };
+}
+
+export function resolveTargets(saved) {
+  const defaults = emptyNutritionTargets();
+  return {
+    kcal: Number(saved?.kcal) > 0 ? Number(saved.kcal) : defaults.kcal,
+    protein: Number(saved?.protein) > 0 ? Number(saved.protein) : defaults.protein,
+    carbs: Number(saved?.carbs) > 0 ? Number(saved.carbs) : defaults.carbs,
+    fat: Number(saved?.fat) > 0 ? Number(saved.fat) : defaults.fat,
+  };
+}
+
 export function remaining(targets, totals) {
   return {
     kcal: roundTo(targets.kcal - totals.kcal, 1),

@@ -14,6 +14,12 @@ export function emptyState() {
     workoutLogs: {},
     foodLogs: {},
     foods: [],
+    nutritionTargets: {
+      kcal: 3600,
+      protein: 160,
+      carbs: 490,
+      fat: 80,
+    },
     calendarNotes: {},
     extraEvents: [],
   };

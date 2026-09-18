@@ -8,7 +8,7 @@ This repository is this site only.
 
 ## What it does
 
-- **Gym, Monday–Sunday**, a set ice-hockey session each day: strength, recovery, speed, power, conditioning, battle, mobility. Written as sets and reps. Rest only if you mark it.
+- **Gym, Monday–Sunday**, a set ice-hockey session each day (agility, aerobic, recovery, strength, intervals, long bike, core). Rest only if you mark it.
 - **Weigh-in every day.**
 - **Food / nutrition** with game, train, and rest targets, and Nix’s notes.
 - **Built-in calendar** in **Asia/Tokyo** time.

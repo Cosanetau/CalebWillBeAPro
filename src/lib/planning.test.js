@@ -3,7 +3,7 @@ import { addDaysISO, mondayOfWeek, tokyoISODate, weekDatesContaining, weekdayInd
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
 import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
 import { mealTotals, remaining, targetsFor } from "./nutrition.js";
-import { rxLine } from "../data/sessions.js";
+import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
 
 describe("tokyo week math", () => {
@@ -51,22 +51,24 @@ describe("week plan", () => {
     const weekDates = weekDatesContaining("2026-09-18");
     const plan = planWeek({ weekDates, restDays: { "2026-09-16": true } });
 
-    expect(sessionIdForWeekday("2026-09-14")).toBe("mon-strength");
-    expect(sessionIdForWeekday("2026-09-15")).toBe("tue-recovery");
-    expect(sessionIdForWeekday("2026-09-16")).toBe("wed-speed");
-    expect(plan["2026-09-14"].sessionId).toBe("mon-strength");
+    expect(sessionIdForWeekday("2026-09-14")).toBe("mon-agility");
+    expect(sessionIdForWeekday("2026-09-15")).toBe("tue-aerobic");
+    expect(sessionIdForWeekday("2026-09-16")).toBe("wed-recovery");
+    expect(plan["2026-09-14"].sessionId).toBe("mon-agility");
     expect(plan["2026-09-16"].sessionId).toBe("rest");
-    expect(plan["2026-09-18"].sessionId).toBe("fri-conditioning");
+    expect(plan["2026-09-18"].sessionId).toBe("fri-intervals");
     expect(dayKind(plan["2026-09-16"].sessionId)).toBe("rest");
     expect(dayKind(plan["2026-09-14"].sessionId)).toBe("train");
     expect(foodKind({ isGame: true, isRest: false })).toBe("game");
     expect(foodKind({ isGame: false, isRest: true })).toBe("rest");
   });
 
-  it("writes work as sets of reps", () => {
-    const monday = getSession("mon-strength");
-    expect(rxLine(monday.items[0])).toMatch(/sets of/);
-    expect(monday.items[0].sets).toBe(5);
+  it("keeps the Monday hockey work as written", () => {
+    const monday = getSession("mon-agility");
+    const box = sessionItems(monday).find((item) => item.id === "box");
+    expect(rxLine(box)).toBe("4 × 3");
+    expect(monday.sections.map((block) => block.name).join(" ")).toMatch(/Agility/);
+    expect(monday.sections.map((block) => block.name).join(" ")).toMatch(/Ankle/);
   });
 });
 

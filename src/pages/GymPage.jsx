@@ -3,7 +3,7 @@ import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
 import { isRestDay } from "../lib/restDays.js";
 import { sessionForDate } from "../lib/program.js";
-import { rxLine } from "../data/sessions.js";
+import { rxLine, sessionItems } from "../data/sessions.js";
 
 export default function GymPage() {
   const today = tokyoISODate();
@@ -14,6 +14,7 @@ export default function GymPage() {
   const rest = isRestDay(selected, week.restMap);
   const session = sessionForDate(selected, week.restMap);
   const weighIn = day.food.weightKg;
+  const items = sessionItems(session);
 
   function setWeighIn(value) {
     day.setFood({ weightKg: value });
@@ -22,17 +23,29 @@ export default function GymPage() {
     }
   }
 
+  function setItem(item, next) {
+    day.setWorkout({
+      sessionId: session.id,
+      completed: {
+        ...day.workout.completed,
+        [item.id]: { ...(day.workout.completed?.[item.id] || {}), ...next },
+      },
+    });
+  }
+
   const completedCount = useMemo(() => {
-    return (session.items || []).filter((item) => day.workout.completed?.[item.id]?.done).length;
-  }, [session, day.workout.completed]);
+    return items.filter((item) => day.workout.completed?.[item.id]?.done).length;
+  }, [items, day.workout.completed]);
 
   return (
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Gym</p>
-        <h1>{weekdayLabel(selected)} · {session.title}</h1>
+        <h1>
+          {weekdayLabel(selected)} · {session.short}
+        </h1>
         <p className="lede">
-          Set sessions for the week. We do the day’s work unless you mark rest.
+          Proven ice-hockey week. We do the day’s work unless you mark rest.
         </p>
       </section>
 
@@ -93,50 +106,41 @@ export default function GymPage() {
         {rest ? (
           <p className="muted">Off gym today. Uncheck rest if you’re training.</p>
         ) : (
-          <ol className="work-list">
-            {session.items.map((item) => {
-              const log = day.workout.completed?.[item.id] || {};
-              return (
-                <li key={item.id}>
-                  <label className="check">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(log.done)}
-                      onChange={(event) =>
-                        day.setWorkout({
-                          sessionId: session.id,
-                          completed: {
-                            ...day.workout.completed,
-                            [item.id]: { ...log, done: event.target.checked },
-                          },
-                        })
-                      }
-                    />
-                    <span>
-                      <strong>{item.name}</strong>
-                      <em>
-                        {rxLine(item)}
-                      </em>
-                    </span>
-                  </label>
-                  <input
-                    className="inline"
-                    placeholder="kg"
-                    value={log.detail || ""}
-                    onChange={(event) =>
-                      day.setWorkout({
-                        sessionId: session.id,
-                        completed: {
-                          ...day.workout.completed,
-                          [item.id]: { ...log, detail: event.target.value },
-                        },
-                      })
-                    }
-                  />
-                </li>
-              );
-            })}
-          </ol>
+          (session.sections || []).map((block) => (
+            <div className="block" key={block.name}>
+              <h3>{block.name}</h3>
+              {block.note ? <p className="hint">{block.note}</p> : null}
+              <ol className="work-list">
+                {block.items.map((entry) => {
+                  const log = day.workout.completed?.[entry.id] || {};
+                  return (
+                    <li key={entry.id}>
+                      <label className="check">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(log.done)}
+                          onChange={(event) => setItem(entry, { done: event.target.checked })}
+                        />
+                        <span>
+                          <strong>{entry.name}</strong>
+                          <em>{rxLine(entry)}</em>
+                          {entry.cue ? <small>{entry.cue}</small> : null}
+                        </span>
+                      </label>
+                      {entry.load ? (
+                        <input
+                          className="inline"
+                          placeholder="kg"
+                          value={log.detail || ""}
+                          onChange={(event) => setItem(entry, { detail: event.target.value })}
+                        />
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          ))
         )}
 
         <label>
@@ -148,7 +152,7 @@ export default function GymPage() {
           />
         </label>
         <p className="muted">
-          {rest ? "Rest." : `${completedCount} of ${session.items.length} done.`} Logged as {auth.username}.
+          {rest ? "Rest." : `${completedCount} of ${items.length} done.`} Logged as {auth.username}.
         </p>
       </section>
     </div>

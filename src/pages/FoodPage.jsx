@@ -10,6 +10,7 @@ import {
   resolveTargets,
   scaleRecipe,
   nutritionBits,
+  inForDayLine,
 } from "../lib/nutrition.js";
 import { foodKind } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
@@ -108,14 +109,13 @@ export default function FoodPage() {
         <header className="panel-head">
           <h2>{formatDate(selected, { year: undefined })}</h2>
         </header>
-        {showMacros ? (
-          <div className="macro-row large">
-            <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
-            <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
-            <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
-            <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
-          </div>
-        ) : null}
+        <h3>In for this day</h3>
+        <div className="macro-row">
+          <Macro label="Cal" value={totals.kcal} goal={targets.kcal} left={left.kcal} unit="cal" />
+          <Macro label="Pro" value={totals.protein} goal={targets.protein} left={left.protein} />
+          <Macro label="Carb" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
+          <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
+        </div>
 
         {recipes.length ? (
           <form className="put-form" onSubmit={putOnDay}>
@@ -234,14 +234,16 @@ export default function FoodPage() {
   );
 }
 
-function Macro({ label, value, goal, left }) {
+function Macro({ label, value, goal, left, unit = "" }) {
   const pct = goal ? Math.min(100, Math.round((Number(value) / goal) * 100)) : 0;
+  const line = inForDayLine(value, goal, unit);
+  const cut = line.lastIndexOf("/");
   return (
     <div className="macro">
       <span>{label}</span>
       <strong>
-        {Math.round(value)}
-        <small>/{goal}</small>
+        {line.slice(0, cut)}
+        <small>/{line.slice(cut + 1)}</small>
       </strong>
       <i style={{ width: `${pct}%` }} />
       <em>{left >= 0 ? `${Math.round(left)} left` : `${Math.round(Math.abs(left))} over`}</em>

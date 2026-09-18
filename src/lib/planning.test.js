@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionForDate, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS } from "./nutrition.js";
+import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS, inForDayLine } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -105,6 +105,9 @@ describe("nutrition targets", () => {
     ]);
     expect(totals.protein).toBe(70);
     expect(remaining(resolveTargets({ protein: 80 }), totals).protein).toBe(10);
+    expect(inForDayLine(600, 3000, "cal")).toBe("600 cal/3000");
+    expect(inForDayLine(80, 160)).toBe("80/160");
+    expect(inForDayLine(0, 3100, "cal")).toBe("0 cal/3100");
   });
 });
 

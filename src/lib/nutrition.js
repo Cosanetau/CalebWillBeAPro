@@ -63,6 +63,12 @@ export function mealTotals(meals = []) {
   );
 }
 
+export function inForDayLine(value, goal, unit = "") {
+  const eaten = Math.round(Number(value) || 0);
+  const need = Math.round(Number(goal) || 0);
+  return unit ? `${eaten} ${unit}/${need}` : `${eaten}/${need}`;
+}
+
 export function emptyNutritionTargets() {
   return { kcal: 3600, protein: 160, carbs: 490, fat: 80 };
 }

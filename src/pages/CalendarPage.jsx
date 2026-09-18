@@ -1,19 +1,19 @@
 import { useMemo, useState } from "react";
 import { useApp, useDay } from "../lib/useApp.jsx";
 import {
-  formatTokyoDate,
+  formatDate,
   monthGrid,
-  tokyoISODate,
-  tokyoParts,
+  localISODate,
+  localParts,
   weekdayLabel,
   WEEK_DAYS,
-} from "../lib/tokyo.js";
+} from "../lib/dates.js";
 import { collectRestMap, isRestDay } from "../lib/restDays.js";
 import { calendarKind, sessionForDate } from "../lib/program.js";
 
 export default function CalendarPage() {
-  const now = tokyoParts();
-  const today = tokyoISODate();
+  const now = localParts();
+  const today = localISODate();
   const [cursor, setCursor] = useState({ year: now.year, month: now.month });
   const [selected, setSelected] = useState(today);
   const { state } = useApp();
@@ -104,7 +104,7 @@ export default function CalendarPage() {
         <header className="panel-head">
           <div>
             <p className="kicker">{weekdayLabel(selected)}</p>
-            <h2>{formatTokyoDate(selected)}</h2>
+            <h2>{formatDate(selected)}</h2>
           </div>
           <span className={`chip ${kind}`}>{session.short}</span>
         </header>
@@ -122,7 +122,7 @@ export default function CalendarPage() {
           {day.game ? (
             <div className="grid-2">
               <label>
-                Puck drop (Tokyo)
+                Puck drop
                 <input
                   type="time"
                   value={day.game.time || "14:00"}

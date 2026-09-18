@@ -10,8 +10,8 @@ This repository is this site only.
 
 - **Gym, Monday–Sunday**, a set ice-hockey session each day (agility, aerobic, recovery, strength, intervals, long bike, core). Rest only if you mark it.
 - **Weigh-in every day.**
-- **Food / nutrition** with game, train, and rest targets, and Nix’s notes.
-- **Built-in calendar** in **Asia/Tokyo** time.
+- **Food** starts blank. Add ingredients you cook. The week’s shop list fills from what you add.
+- **Built-in calendar** in local time.
 - **Logins:** Caleb and Nix each have a username and password.
 
 ## Logins

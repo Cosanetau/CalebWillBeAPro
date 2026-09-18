@@ -1,4 +1,4 @@
-import { weekdayIndexFromISO } from "./tokyo.js";
+import { weekdayIndexFromISO } from "./dates.js";
 import { sessions, WEEKDAY_SESSION_IDS } from "../data/sessions.js";
 import { isRestDay } from "./restDays.js";
 

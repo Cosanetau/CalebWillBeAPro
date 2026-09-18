@@ -6,7 +6,7 @@ export function emptyState() {
       weightKg: 82,
       heightCm: "",
       team: "",
-      notes: "Ice hockey in Japan. Train for explosiveness, cardio, recoverability, and strength.",
+      notes: "Ice hockey. Train for explosiveness, cardio, recoverability, and strength.",
     },
     games: {},
     restDays: {},

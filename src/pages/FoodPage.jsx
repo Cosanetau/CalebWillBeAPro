@@ -1,15 +1,37 @@
 import { useState } from "react";
-import { foods } from "../data/foods.js";
-import { MEAL_SLOTS, SUPPLEMENTS, mealTotals, remaining, targetsFor } from "../lib/nutrition.js";
+import {
+  FOOD_UNITS,
+  MEAL_SLOTS,
+  SUPPLEMENTS,
+  amountLine,
+  mealTotals,
+  remaining,
+  targetsFor,
+  weekBuyList,
+} from "../lib/nutrition.js";
 import { foodKind, getSession } from "../lib/program.js";
-import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
+import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { newId } from "../lib/state.js";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 
+const emptyDraft = {
+  slot: "dinner",
+  name: "",
+  brand: "",
+  amount: "",
+  unit: "g",
+  kcal: "",
+  protein: "",
+  carbs: "",
+  fat: "",
+  notes: "",
+};
+
 export default function FoodPage() {
-  const today = tokyoISODate();
+  const today = localISODate();
   const [selected, setSelected] = useState(today);
-  const { state, actor, auth } = useApp();
+  const [adding, setAdding] = useState(false);
+  const { state, actor, auth, patch } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
   const session = getSession(week.plan[selected]?.sessionId);
@@ -20,52 +42,72 @@ export default function FoodPage() {
   const targets = targetsFor(kind, Number(day.food.weightKg || state.profile.weightKg) || 82);
   const totals = mealTotals(day.food.meals);
   const left = remaining(targets, totals);
-  const [draft, setDraft] = useState({
-    slot: kind === "game" ? "pre" : "breakfast",
-    name: "",
-    kcal: "",
-    protein: "",
-    carbs: "",
-    fat: "",
-  });
+  const shop = weekBuyList(week.weekDates, state.foodLogs);
+  const [draft, setDraft] = useState(emptyDraft);
 
-  function addMeal(meal) {
+  function addFood(event) {
+    event.preventDefault();
+    if (!draft.name.trim()) return;
     day.setFood({
       meals: [
         ...day.food.meals,
         {
           id: newId(),
-          slot: meal.slot || draft.slot,
-          name: meal.name,
-          kcal: Number(meal.kcal || 0),
-          protein: Number(meal.protein || 0),
-          carbs: Number(meal.carbs || 0),
-          fat: Number(meal.fat || 0),
+          slot: draft.slot,
+          name: draft.name.trim(),
+          brand: draft.brand.trim(),
+          amount: Number(draft.amount || 0),
+          unit: draft.unit,
+          kcal: Number(draft.kcal || 0),
+          protein: Number(draft.protein || 0),
+          carbs: Number(draft.carbs || 0),
+          fat: Number(draft.fat || 0),
+          notes: draft.notes.trim(),
           actor,
         },
       ],
     });
-  }
-
-  function addDraft(event) {
-    event.preventDefault();
-    if (!draft.name) return;
-    addMeal(draft);
-    setDraft({ ...draft, name: "", kcal: "", protein: "", carbs: "", fat: "" });
+    setDraft({ ...emptyDraft, slot: draft.slot, unit: draft.unit });
   }
 
   function removeMeal(id) {
     day.setFood({ meals: day.food.meals.filter((meal) => meal.id !== id) });
   }
 
+  function setWeighIn(value) {
+    day.setFood({ weightKg: value });
+    if (selected === today) {
+      patch({ profile: { ...state.profile, weightKg: value } });
+    }
+  }
+
   return (
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Food · {auth.username}</p>
-        <h1>{targets.label}</h1>
-        <p className="lede">
-          {session.title}. Numbers move with the day — game, train, or off.
-        </p>
+        <h1>The kitchen</h1>
+        <p className="lede">Add the ingredients you cook. The shop list fills itself for the week.</p>
+      </section>
+
+      <section className="panel">
+        <header className="panel-head">
+          <h2>This week’s shop</h2>
+        </header>
+        {shop.length ? (
+          <ul className="shop-list">
+            {shop.map((item) => (
+              <li key={`${item.name}-${item.unit}`}>
+                <strong>{item.name}</strong>
+                <span>
+                  {amountLine(item) || "as added"}
+                  {item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">Nothing to buy yet. Add food and it shows up here.</p>
+        )}
       </section>
 
       <div className="week-strip">
@@ -81,78 +123,71 @@ export default function FoodPage() {
           >
             <b>{weekdayLabel(date)}</b>
             <span>{date.slice(8)}</span>
-            <em>{(state.foodLogs[date]?.meals || []).length} meals</em>
+            <em>{(state.foodLogs[date]?.meals || []).length || "—"}</em>
           </button>
         ))}
       </div>
 
       <section className="panel">
         <header className="panel-head">
-          <h2>{formatTokyoDate(selected, { year: undefined })}</h2>
-          <span className="chip">{targets.label}</span>
+          <h2>{formatDate(selected, { year: undefined })}</h2>
+          <button type="button" className="btn" onClick={() => setAdding((value) => !value)}>
+            {adding ? "Close" : "Add food"}
+          </button>
         </header>
-        <p className="muted">{targets.note}</p>
+        <p className="muted">{targets.label}. {targets.note}</p>
         <div className="macro-row large">
           <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
           <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
           <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
           <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
         </div>
-      </section>
 
-      <section className="panel">
-        <header className="panel-head">
-          <h2>Logged meals</h2>
-        </header>
-        {MEAL_SLOTS.map((slot) => {
-          const items = day.food.meals.filter((meal) => meal.slot === slot.id);
-          return (
-            <div key={slot.id} className="meal-slot">
-              <h3>{slot.label}</h3>
-              {items.length ? (
-                <ul className="meal-list">
-                  {items.map((meal) => (
-                    <li key={meal.id}>
-                      <div>
-                        <strong>{meal.name}</strong>
-                        <span>
-                          {meal.kcal} kcal · P {meal.protein} · C {meal.carbs} · F {meal.fat}
-                          {meal.actor === "nutritionist" ? " · Nix" : ""}
-                        </span>
-                      </div>
-                      <button type="button" className="text-btn" onClick={() => removeMeal(meal.id)}>
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="muted">Nothing logged.</p>
-              )}
+        {adding ? (
+          <form className="add-food-form" onSubmit={addFood}>
+            <h3>Ingredient</h3>
+            <div className="grid-2">
+              <label>
+                Name
+                <input
+                  autoFocus
+                  value={draft.name}
+                  onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                  placeholder="Chicken, rice, eggs…"
+                />
+              </label>
+              <label>
+                Brand / notes on the pack
+                <input
+                  value={draft.brand}
+                  onChange={(event) => setDraft({ ...draft, brand: event.target.value })}
+                />
+              </label>
             </div>
-          );
-        })}
-      </section>
-
-      <section className="panel">
-        <header className="panel-head">
-          <h2>Stuff we actually eat</h2>
-        </header>
-        <div className="food-grid">
-          {foods.map((food) => (
-            <button key={food.id} type="button" className="food-card" onClick={() => addMeal(food)}>
-              <strong>{food.name}</strong>
-              <span>
-                {food.kcal} kcal · P{food.protein} C{food.carbs} F{food.fat}
-              </span>
-            </button>
-          ))}
-        </div>
-        <form className="custom-meal" onSubmit={addDraft}>
-          <h3>Custom</h3>
-          <div className="grid-2">
+            <div className="grid-2">
+              <label>
+                Amount
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={draft.amount}
+                  onChange={(event) => setDraft({ ...draft, amount: event.target.value })}
+                />
+              </label>
+              <label>
+                Unit
+                <select value={draft.unit} onChange={(event) => setDraft({ ...draft, unit: event.target.value })}>
+                  {FOOD_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <label>
-              Slot
+              Meal
               <select value={draft.slot} onChange={(event) => setDraft({ ...draft, slot: event.target.value })}>
                 {MEAL_SLOTS.map((slot) => (
                   <option key={slot.id} value={slot.id}>
@@ -161,38 +196,86 @@ export default function FoodPage() {
                 ))}
               </select>
             </label>
+            <div className="macro-inputs">
+              {["kcal", "protein", "carbs", "fat"].map((key) => (
+                <label key={key}>
+                  {key}
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={draft[key]}
+                    onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
+                  />
+                </label>
+              ))}
+            </div>
             <label>
-              Name
-              <input
-                value={draft.name}
-                onChange={(event) => setDraft({ ...draft, name: event.target.value })}
-                placeholder="What did you eat?"
+              Notes
+              <textarea
+                rows="2"
+                value={draft.notes}
+                onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
+                placeholder="How you’ll cook it, shop aisle, anything else"
               />
             </label>
-          </div>
-          <div className="macro-inputs">
-            {["kcal", "protein", "carbs", "fat"].map((key) => (
-              <label key={key}>
-                {key}
-                <input
-                  type="number"
-                  min="0"
-                  value={draft[key]}
-                  onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
-                />
-              </label>
-            ))}
-          </div>
-          <button type="submit" className="btn">
-            Add it
-          </button>
-        </form>
+            <button type="submit" className="btn">
+              Add it
+            </button>
+          </form>
+        ) : null}
+      </section>
+
+      <section className="panel">
+        <header className="panel-head">
+          <h2>On this day</h2>
+        </header>
+        {day.food.meals.length ? (
+          MEAL_SLOTS.map((slot) => {
+            const items = day.food.meals.filter((meal) => meal.slot === slot.id);
+            if (!items.length) return null;
+            return (
+              <div key={slot.id} className="meal-slot">
+                <h3>{slot.label}</h3>
+                <ul className="meal-list">
+                  {items.map((meal) => (
+                    <li key={meal.id}>
+                      <div>
+                        <strong>{meal.name}</strong>
+                        <span>
+                          {[amountLine(meal), meal.brand, meal.kcal ? `${meal.kcal} kcal` : "", `P ${meal.protein || 0}`, `C ${meal.carbs || 0}`, `F ${meal.fat || 0}`, meal.actor === "nutritionist" ? "Nix" : ""]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                        {meal.notes ? <span>{meal.notes}</span> : null}
+                      </div>
+                      <button type="button" className="text-btn" onClick={() => removeMeal(meal.id)}>
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })
+        ) : (
+          <p className="muted">Blank. Hit Add food when you know what you’re cooking.</p>
+        )}
       </section>
 
       <section className="panel">
         <header className="panel-head">
           <h2>Check-in</h2>
         </header>
+        <label>
+          Weigh-in (kg)
+          <input
+            type="number"
+            step="0.1"
+            value={day.food.weightKg}
+            onChange={(event) => setWeighIn(event.target.value)}
+          />
+        </label>
         <label>
           Water (L) · target {targets.waterL}
           <input
@@ -219,34 +302,22 @@ export default function FoodPage() {
             </label>
           ))}
         </div>
-        <div className="grid-2">
-          <label>
-            Weigh-in (kg)
-            <input
-              type="number"
-              step="0.1"
-              value={day.food.weightKg}
-              onChange={(event) => day.setFood({ weightKg: event.target.value })}
-            />
-          </label>
-          <label>
-            Energy 1–5
-            <input
-              type="number"
-              min="1"
-              max="5"
-              value={day.food.energy}
-              onChange={(event) => day.setFood({ energy: event.target.value })}
-            />
-          </label>
-        </div>
+        <label>
+          Energy 1–5
+          <input
+            type="number"
+            min="1"
+            max="5"
+            value={day.food.energy}
+            onChange={(event) => day.setFood({ energy: event.target.value })}
+          />
+        </label>
         <label>
           Caleb note
           <textarea
             rows="2"
             value={day.food.athleteNote}
             onChange={(event) => day.setFood({ athleteNote: event.target.value })}
-            placeholder="How food sat, travel, rink snacks…"
           />
         </label>
         <label>
@@ -256,7 +327,6 @@ export default function FoodPage() {
             rows="3"
             value={day.food.nutritionistNote}
             onChange={(event) => day.setFood({ nutritionistNote: event.target.value })}
-            placeholder="Adjustments, game-day timing, what to shop…"
           />
         </label>
       </section>

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { fetchMe, loadState, saveState, signIn, signOut } from "./api.js";
 import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
-import { mondayOfWeek, tokyoISODate, weekDatesContaining } from "./tokyo.js";
+import { mondayOfWeek, localISODate, weekDatesContaining } from "./dates.js";
 import { collectRestMap, restDatesInWeek } from "./restDays.js";
 import { planWeek } from "./program.js";
 
@@ -119,7 +119,7 @@ export function useApp() {
   return value;
 }
 
-export function useWeek(isoDate = tokyoISODate()) {
+export function useWeek(isoDate = localISODate()) {
   const { state, patch } = useApp();
   const weekDates = weekDatesContaining(isoDate);
   const monday = mondayOfWeek(isoDate);

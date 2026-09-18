@@ -17,7 +17,7 @@ export const DAY_TYPE_TARGETS = {
     carbsPerKg: 6.0,
     fatPerKg: 1.0,
     waterL: 3.6,
-    note: "Carbs around the session. Protein at every meal. Salt food in Japan heat and after ice.",
+    note: "Carbs around the session. Protein at every meal. Salt food in heat and after ice.",
   },
   rest: {
     label: "Rest day",
@@ -80,6 +80,46 @@ export const MEAL_SLOTS = [
   { id: "dinner", label: "Dinner" },
   { id: "evening", label: "Evening" },
 ];
+
+export const FOOD_UNITS = ["g", "kg", "ml", "L", "piece", "cup", "tbsp", "tsp", "pack"];
+
+export function weekBuyList(weekDates, foodLogs = {}) {
+  const map = new Map();
+  for (const date of weekDates) {
+    for (const meal of foodLogs[date]?.meals || []) {
+      const name = String(meal.name || "").trim();
+      if (!name) continue;
+      const unit = String(meal.unit || "").trim();
+      const key = `${name.toLowerCase()}|${unit.toLowerCase()}`;
+      const current = map.get(key) || {
+        name,
+        unit,
+        amount: 0,
+        kcal: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        days: [],
+      };
+      current.amount += Number(meal.amount || 0);
+      current.kcal += Number(meal.kcal || 0);
+      current.protein += Number(meal.protein || 0);
+      current.carbs += Number(meal.carbs || 0);
+      current.fat += Number(meal.fat || 0);
+      if (!current.days.includes(date)) current.days.push(date);
+      map.set(key, current);
+    }
+  }
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function amountLine(item) {
+  const amount = Number(item.amount);
+  if (!amount && !item.unit) return "";
+  if (!amount) return item.unit || "";
+  if (!item.unit) return String(amount);
+  return `${amount} ${item.unit}`;
+}
 
 export const SUPPLEMENTS = [
   { id: "creatine", label: "Creatine 5g" },

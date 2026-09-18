@@ -128,9 +128,9 @@ h3 {
 .desktop-nav a.is-active, .mobile-nav a.is-active { border-bottom-color: var(--red); }
 
 .topbar-meta { display: flex; align-items: center; gap: 12px; }
-.tokyo-clock { display: grid; line-height: 1.05; text-align: right; }
-.tokyo-clock strong { font-size: 14px; }
-.tokyo-clock span { color: var(--muted); font-size: 12px; }
+.local-clock { display: grid; line-height: 1.05; text-align: right; }
+.local-clock strong { font-size: 14px; }
+.local-clock span { color: var(--muted); font-size: 12px; }
 
 .who {
   font-family: var(--marker);
@@ -364,7 +364,11 @@ textarea {
 .meal-list li { display: flex; justify-content: space-between; gap: 12px; }
 .meal-list span { display: block; color: var(--muted); font-size: 13px; }
 
-.food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.shop-list li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--ink); padding: 8px 0; }
+.shop-list span { color: var(--muted); }
+.add-food-form { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); }
+.add-food-form .btn { margin-top: 12px; }
 .food-card {
   display: grid;
   gap: 4px;

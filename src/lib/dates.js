@@ -1,13 +1,15 @@
-export const TOKYO_TZ = "Asia/Tokyo";
 export const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function pad(value) {
   return String(value).padStart(2, "0");
 }
 
-export function tokyoParts(date = new Date()) {
+export function localTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+
+export function localParts(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: TOKYO_TZ,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -28,17 +30,17 @@ export function tokyoParts(date = new Date()) {
   };
 }
 
-export function tokyoISODate(date = new Date()) {
-  const { year, month, day } = tokyoParts(date);
+export function localISODate(date = new Date()) {
+  const { year, month, day } = localParts(date);
   return `${year}-${pad(month)}-${pad(day)}`;
 }
 
-export function tokyoClock(date = new Date()) {
-  const { hour, minute } = tokyoParts(date);
+export function localClock(date = new Date()) {
+  const { hour, minute } = localParts(date);
   return `${pad(hour)}:${pad(minute)}`;
 }
 
-export function formatTokyoDate(isoDate, options = {}) {
+export function formatDate(isoDate, options = {}) {
   const [year, month, day] = isoDate.split("-").map(Number);
   const utc = new Date(Date.UTC(year, month - 1, day, 12));
   return new Intl.DateTimeFormat("en-GB", {

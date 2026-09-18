@@ -11,8 +11,10 @@ function filePath() {
   return path.join(process.cwd(), "data", "state.json");
 }
 
-function kvEnabled() {
-  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+export function persistKind() {
+  if (kvEnabled()) return "kv";
+  if (process.env.VERCEL) return "tmp";
+  return "file";
 }
 
 async function kvGet() {

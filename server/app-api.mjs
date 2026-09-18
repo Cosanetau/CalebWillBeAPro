@@ -2,6 +2,7 @@ import { accessWordError, hashAccessWord } from "../src/lib/access.js";
 import {
   createSessionToken,
   parseCookies,
+  persistKind,
   readState,
   seedAccessWord,
   sessionCookie,
@@ -61,7 +62,7 @@ export async function handleApi(req, res) {
   const url = new URL(req.url, "http://localhost");
 
   if (req.method === "GET" && url.pathname === "/api/health") {
-    send(res, 200, { ok: true });
+    send(res, 200, { ok: true, persist: persistKind() });
     return true;
   }
 
@@ -70,6 +71,7 @@ export async function handleApi(req, res) {
     send(res, 200, {
       ok,
       needsSetup: !state.accessWordHash,
+      persist: persistKind(),
     });
     return true;
   }

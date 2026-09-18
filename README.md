@@ -32,7 +32,9 @@ npm run build
 
 The local app stores state in `data/state.json`.
 
-For a live shared copy on Vercel, set Upstash/Vercel KV:
+Production deploys from `main` to `https://caleb-will-be-a-pro.vercel.app`. Until KV is set, the live site keeps data in this browser so you can still test.
+
+For a live shared copy between Japan and the nutritionist, set Upstash/Vercel KV:
 
 - `KV_REST_API_URL`
 - `KV_REST_API_TOKEN`

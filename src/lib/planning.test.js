@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
-import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
-import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealTotals, remaining, resolveTargets, scaleCatalogFood, weekBuyList, nutritionBits } from "./nutrition.js";
+import { collectRestMap, isRestDay, restDatesInWeek, applyGameRest } from "./restDays.js";
+import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionForDate, sessionIdForWeekday } from "./program.js";
+import { formatWeightKg, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -47,6 +47,15 @@ describe("rest days", () => {
     expect(map["2026-09-15"]).toBe(true);
     expect(map["2026-09-18"]).toBe(true);
   });
+
+  it("will not mark rest on a game day, and game clears rest", () => {
+    const playing = applyGameRest({ games: {}, restDays: { "2026-09-18": true } }, "2026-09-18", "game", true);
+    expect(playing.games["2026-09-18"]).toBeTruthy();
+    expect(playing.restDays["2026-09-18"]).toBeUndefined();
+    const blocked = applyGameRest(playing, "2026-09-18", "rest", true);
+    expect(blocked.games["2026-09-18"]).toBeTruthy();
+    expect(blocked.restDays["2026-09-18"]).toBeUndefined();
+  });
 });
 
 describe("week plan", () => {
@@ -67,6 +76,8 @@ describe("week plan", () => {
     expect(dayTypeLabel({ isGame: true, isRest: false })).toBe("Game day");
     expect(dayTypeLabel({ isGame: false, isRest: true })).toBe("Rest day");
     expect(dayTypeLabel({ isGame: false, isRest: false })).toBe("Gym day");
+    expect(sessionForDate("2026-09-18", {}, { "2026-09-18": { time: "14:00" } }).id).toBe("game");
+    expect(sessionForDate("2026-09-18", {}, { "2026-09-18": { time: "14:00" } }).title).toMatch(/Game/);
   });
 
   it("keeps the Monday hockey work as written", () => {
@@ -115,34 +126,48 @@ describe("week shop list", () => {
     expect(list[0]).toMatchObject({ name: "Chicken", amount: 600, unit: "g", protein: 120 });
     expect(list[1]).toMatchObject({ name: "Rice", amount: 150, unit: "g" });
   });
+
+  it("shops ingredients from a cookbook food", () => {
+    const week = weekDatesContaining("2026-09-18");
+    const list = weekBuyList(week, {
+      "2026-09-18": {
+        meals: [
+          {
+            name: "Rice bowl",
+            ingredients: [
+              { name: "Chicken", amount: 200, unit: "g", kcal: 330, protein: 62 },
+              { name: "Rice", amount: 150, unit: "g", kcal: 180, protein: 4 },
+            ],
+          },
+        ],
+      },
+    });
+    expect(list.map((item) => item.name)).toEqual(["Chicken", "Rice"]);
+    expect(list[0].amount).toBe(200);
+  });
 });
 
-describe("food book", () => {
-  it("scales a catalog food onto a day", () => {
-    const meal = scaleCatalogFood(
+describe("cookbook", () => {
+  it("scales a recipe and its ingredients onto a day", () => {
+    const meal = scaleRecipe(
       {
-        id: "chicken",
-        name: "Chicken",
-        brand: "Shop",
-        amount: 100,
-        unit: "g",
-        kcal: 165,
-        protein: 31,
-        carbs: 0,
-        fat: 3.6,
+        id: "bowl",
+        name: "Rice bowl",
+        ingredients: [
+          { name: "Chicken", amount: 100, unit: "g", kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
+          { name: "Rice", amount: 75, unit: "g", kcal: 90, protein: 2, carbs: 20, fat: 0 },
+        ],
       },
       2
     );
     expect(meal).toMatchObject({
-      foodId: "chicken",
-      name: "Chicken",
-      amount: 200,
-      unit: "g",
-      kcal: 330,
-      protein: 62,
-      fat: 7.2,
+      foodId: "bowl",
+      name: "Rice bowl",
       servings: 2,
+      kcal: 510,
+      protein: 66,
     });
+    expect(meal.ingredients[0]).toMatchObject({ name: "Chicken", amount: 200, kcal: 330 });
   });
 
   it("formats a weigh-in for a calendar square", () => {

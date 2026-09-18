@@ -119,7 +119,7 @@ h3 {
 }
 .brand-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
-.desktop-nav { display: flex; gap: 16px; }
+.desktop-nav { display: flex; gap: 12px; flex-wrap: wrap; }
 .desktop-nav a, .mobile-nav a {
   font-family: var(--serif);
   font-size: 18px;
@@ -437,6 +437,21 @@ textarea {
   cursor: pointer;
 }
 .cell-flags input { width: auto; margin: 0; flex: none; }
+.ingredient-card {
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--ink);
+}
+.ingredient-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.cell-flags input:disabled,
+.day-options input:disabled {
+  opacity: 0.35;
+}
 .day-options {
   display: flex;
   flex-wrap: wrap;
@@ -470,7 +485,7 @@ textarea {
   background: var(--paper);
   border-top: 1px solid var(--ink);
 }
-.mobile-nav a { flex: 1; text-align: center; }
+.mobile-nav a { flex: 1; text-align: center; font-size: 13px; }
 
 .site-foot {
   display: flex;

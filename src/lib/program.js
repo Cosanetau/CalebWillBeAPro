@@ -10,7 +10,17 @@ export function sessionIdForWeekday(isoDate) {
   return WEEKDAY_SESSION_IDS[weekdayIndexFromISO(isoDate)];
 }
 
-export function sessionForDate(isoDate, restDays) {
+export function sessionForDate(isoDate, restDays, games = {}) {
+  if (games?.[isoDate]) {
+    return {
+      id: "game",
+      weekday: "",
+      short: "Game",
+      title: "Game day",
+      intent: "No gym today. Game day only.",
+      sections: [],
+    };
+  }
   if (isRestDay(isoDate, restDays)) return getSession("rest");
   return getSession(sessionIdForWeekday(isoDate));
 }

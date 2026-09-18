@@ -8,8 +8,8 @@ This repository is this site only.
 
 ## What it does
 
-- **Gym, Monday–Sunday**, built for ice hockey in Japan: explosiveness, cardio, recoverability, and strength.
-- **Two rest days each week**, taken from **that week’s games**, not a standing weekday.
+- **Gym, Monday–Sunday**, a set ice-hockey session each day: strength, recovery, speed, power, conditioning, battle, mobility. Written as sets and reps. Rest only if you mark it.
+- **Weigh-in every day.**
 - **Food / nutrition** with game, train, and rest targets, and Nix’s notes.
 - **Built-in calendar** in **Asia/Tokyo** time.
 - **Logins:** Caleb and Nix each have a username and password.

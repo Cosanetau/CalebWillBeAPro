@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, tokyoISODate, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./tokyo.js";
-import { resolveRestDays, restStatus, suggestRestDays } from "./restDays.js";
-import { dayKind, planWeek, pillarsCovered } from "./program.js";
+import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
+import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
 import { mealTotals, remaining, targetsFor } from "./nutrition.js";
+import { rxLine } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
 
 describe("tokyo week math", () => {
@@ -27,55 +28,45 @@ describe("tokyo week math", () => {
   });
 });
 
-describe("rest days from games", () => {
-  const week = weekDatesContaining("2026-09-18");
-
-  it("does not invent a fixed weekday when there are no games", () => {
-    expect(suggestRestDays(week, {})).toEqual([]);
-    expect(restStatus(week, []).ok).toBe(false);
-  });
-
-  it("uses the game day plus the next day for a single game", () => {
-    expect(suggestRestDays(week, { "2026-09-16": { opponent: "Home" } })).toEqual([
+describe("rest days", () => {
+  it("only rests when a day is marked", () => {
+    expect(isRestDay("2026-09-16", {})).toBe(false);
+    expect(isRestDay("2026-09-16", { "2026-09-16": true })).toBe(true);
+    expect(restDatesInWeek(weekDatesContaining("2026-09-18"), { "2026-09-16": true })).toEqual([
       "2026-09-16",
-      "2026-09-17",
     ]);
   });
 
-  it("uses the two closest game days, including back-to-backs", () => {
-    const games = {
-      "2026-09-14": {},
-      "2026-09-19": {},
-      "2026-09-20": {},
-    };
-    expect(suggestRestDays(week, games)).toEqual(["2026-09-19", "2026-09-20"]);
-  });
-
-  it("lets a manual override replace the suggestion for that week only", () => {
-    const games = { "2026-09-19": {}, "2026-09-20": {} };
-    const rest = resolveRestDays(week, games, {
-      "2026-09-14": ["2026-09-15", "2026-09-18"],
+  it("keeps old weekly rest lists", () => {
+    const map = collectRestMap({
+      restOverrides: { "2026-09-14": ["2026-09-15", "2026-09-18"] },
     });
-    expect(rest).toEqual(["2026-09-15", "2026-09-18"]);
+    expect(map["2026-09-15"]).toBe(true);
+    expect(map["2026-09-18"]).toBe(true);
   });
 });
 
 describe("week plan", () => {
-  it("places recoverability after a game and keeps two rest days from games", () => {
+  it("uses a set hockey session for each weekday unless rest is marked", () => {
     const weekDates = weekDatesContaining("2026-09-18");
-    const games = { "2026-09-16": { time: "14:00" } };
-    const restDays = suggestRestDays(weekDates, games);
-    const plan = planWeek({ weekDates, restDays, games });
+    const plan = planWeek({ weekDates, restDays: { "2026-09-16": true } });
 
-    expect(restDays).toEqual(["2026-09-16", "2026-09-17"]);
-    expect(plan["2026-09-16"].sessionId).toBe("game-rest");
-    expect(plan["2026-09-17"].sessionId).toBe("rest");
-    expect(dayKind(plan["2026-09-16"].sessionId)).toBe("game");
-    expect(dayKind(plan["2026-09-17"].sessionId)).toBe("rest");
+    expect(sessionIdForWeekday("2026-09-14")).toBe("mon-strength");
+    expect(sessionIdForWeekday("2026-09-15")).toBe("tue-recovery");
+    expect(sessionIdForWeekday("2026-09-16")).toBe("wed-speed");
+    expect(plan["2026-09-14"].sessionId).toBe("mon-strength");
+    expect(plan["2026-09-16"].sessionId).toBe("rest");
+    expect(plan["2026-09-18"].sessionId).toBe("fri-conditioning");
+    expect(dayKind(plan["2026-09-16"].sessionId)).toBe("rest");
+    expect(dayKind(plan["2026-09-14"].sessionId)).toBe("train");
+    expect(foodKind({ isGame: true, isRest: false })).toBe("game");
+    expect(foodKind({ isGame: false, isRest: true })).toBe("rest");
+  });
 
-    const trainDays = weekDates.filter((date) => !restDays.includes(date));
-    expect(trainDays).toHaveLength(5);
-    expect(pillarsCovered(plan).every((pillar) => pillar.covered)).toBe(true);
+  it("writes work as sets of reps", () => {
+    const monday = getSession("mon-strength");
+    expect(rxLine(monday.items[0])).toMatch(/sets of/);
+    expect(monday.items[0].sets).toBe(5);
   });
 });
 

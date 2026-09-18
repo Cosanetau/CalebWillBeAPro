@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { foods } from "../data/foods.js";
 import { MEAL_SLOTS, SUPPLEMENTS, mealTotals, remaining, targetsFor } from "../lib/nutrition.js";
-import { dayKind, getSession } from "../lib/program.js";
+import { foodKind, getSession } from "../lib/program.js";
 import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
 import { newId } from "../lib/state.js";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
@@ -12,9 +12,12 @@ export default function FoodPage() {
   const { state, actor, auth } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
-  const kind = dayKind(week.plan[selected]?.sessionId);
   const session = getSession(week.plan[selected]?.sessionId);
-  const targets = targetsFor(kind, Number(state.profile.weightKg) || 82);
+  const kind = foodKind({
+    isGame: Boolean(state.games[selected]),
+    isRest: session.id === "rest",
+  });
+  const targets = targetsFor(kind, Number(day.food.weightKg || state.profile.weightKg) || 82);
   const totals = mealTotals(day.food.meals);
   const left = remaining(targets, totals);
   const [draft, setDraft] = useState({
@@ -70,7 +73,10 @@ export default function FoodPage() {
           <button
             key={date}
             type="button"
-            className={`week-cell button ${selected === date ? "is-today" : ""} ${dayKind(week.plan[date].sessionId)}`}
+            className={`week-cell button ${selected === date ? "is-today" : ""} ${foodKind({
+              isGame: Boolean(state.games[date]),
+              isRest: week.plan[date].sessionId === "rest",
+            })}`}
             onClick={() => setSelected(date)}
           >
             <b>{weekdayLabel(date)}</b>
@@ -215,7 +221,7 @@ export default function FoodPage() {
         </div>
         <div className="grid-2">
           <label>
-            Morning weight (kg)
+            Weigh-in (kg)
             <input
               type="number"
               step="0.1"

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { fetchMe, loadState, saveState, signIn, signOut } from "./api.js";
 import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
 import { mondayOfWeek, tokyoISODate, weekDatesContaining } from "./tokyo.js";
-import { resolveRestDays } from "./restDays.js";
+import { collectRestMap, restDatesInWeek } from "./restDays.js";
 import { planWeek } from "./program.js";
 
 const AppContext = createContext(null);
@@ -123,34 +123,34 @@ export function useWeek(isoDate = tokyoISODate()) {
   const { state, patch } = useApp();
   const weekDates = weekDatesContaining(isoDate);
   const monday = mondayOfWeek(isoDate);
-  const restDays = resolveRestDays(weekDates, state.games, state.restOverrides);
-  const plan = planWeek({ weekDates, restDays, games: state.games });
+  const restMap = collectRestMap(state);
+  const restDays = restDatesInWeek(weekDates, restMap);
+  const plan = planWeek({ weekDates, restDays: restMap });
   const weekGames = weekDates.filter((date) => state.games[date]);
 
-  function setRestDays(nextRest) {
-    patch({
-      restOverrides: {
-        ...state.restOverrides,
-        [monday]: nextRest,
-      },
-    });
+  function toggleRest(date) {
+    const restDays = { ...restMap };
+    if (restDays[date]) delete restDays[date];
+    else restDays[date] = true;
+    patch({ restDays });
   }
 
-  function clearRestOverride() {
-    const restOverrides = { ...state.restOverrides };
-    delete restOverrides[monday];
-    patch({ restOverrides });
+  function setRest(date, on) {
+    const restDays = { ...restMap };
+    if (on) restDays[date] = true;
+    else delete restDays[date];
+    patch({ restDays });
   }
 
   return {
     weekDates,
     monday,
     restDays,
+    restMap,
     plan,
     weekGames,
-    setRestDays,
-    clearRestOverride,
-    hasOverride: Boolean(state.restOverrides[monday]),
+    toggleRest,
+    setRest,
   };
 }
 

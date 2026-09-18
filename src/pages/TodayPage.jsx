@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
-import { restStatus } from "../lib/restDays.js";
-import { dayKind, getSession, pillarsCovered } from "../lib/program.js";
+import { foodKind, sessionForDate } from "../lib/program.js";
+import { rxLine } from "../data/sessions.js";
 import { mealTotals, targetsFor } from "../lib/nutrition.js";
 
 export default function TodayPage() {
@@ -10,24 +10,24 @@ export default function TodayPage() {
   const today = tokyoISODate();
   const week = useWeek(today);
   const day = useDay(today);
-  const planned = week.plan[today];
-  const session = getSession(planned?.sessionId);
-  const kind = dayKind(planned?.sessionId);
-  const targets = targetsFor(kind, Number(state.profile.weightKg) || 82);
+  const session = sessionForDate(today, week.restMap);
+  const kind = foodKind({ isGame: Boolean(day.game), isRest: session.id === "rest" });
+  const targets = targetsFor(kind, Number(day.food.weightKg || state.profile.weightKg) || 82);
   const totals = mealTotals(day.food.meals);
-  const rest = restStatus(week.weekDates, week.restDays);
-  const pillars = pillarsCovered(week.plan);
+
+  function setWeighIn(value) {
+    day.setFood({ weightKg: value });
+    patch({ profile: { ...state.profile, weightKg: value } });
+  }
 
   return (
     <div className="stack">
       <section className="hero-card">
         <p className="kicker">Today</p>
         <h1>{formatTokyoDate(today)}</h1>
-        <p className="lede">
-          {session.title}. {planned?.reason}
-        </p>
+        <p className="lede">{session.intent}</p>
         <div className="chip-row">
-          <span className={`chip ${kind}`}>{kind === "game" ? "Game" : kind === "rest" ? "Off gym" : "Train"}</span>
+          <span className={`chip ${session.id === "rest" ? "rest" : "train"}`}>{session.title}</span>
           {day.game ? (
             <span className="chip game">
               {day.game.time || "TBC"}
@@ -37,20 +37,20 @@ export default function TodayPage() {
         </div>
       </section>
 
-      {!rest.ok ? (
-        <section className="alert-card">
-          <h2>Still need two rest days</h2>
-          <p>They come from this week’s games, not a standing Monday off. Put the games in, or pick the days on Gym.</p>
-          <div className="row-actions">
-            <Link className="btn" to="/calendar">
-              Add games
-            </Link>
-            <Link className="btn ghost" to="/gym">
-              Pick rest days
-            </Link>
-          </div>
-        </section>
-      ) : null}
+      <section className="panel weigh-panel">
+        <label>
+          Weigh-in (kg)
+          <input
+            type="number"
+            min="40"
+            max="160"
+            step="0.1"
+            value={day.food.weightKg}
+            onChange={(event) => setWeighIn(event.target.value)}
+            placeholder="Today’s number"
+          />
+        </label>
+      </section>
 
       <section className="grid-2">
         <article className="panel">
@@ -58,14 +58,17 @@ export default function TodayPage() {
             <h2>Gym</h2>
             <Link to="/gym">open</Link>
           </header>
-          <p>{session.intent}</p>
-          <ul className="compact">
-            {(session.blocks?.[0]?.items || []).slice(0, 3).map((item) => (
-              <li key={item.id}>
-                {item.name} — {item.rx}
-              </li>
-            ))}
-          </ul>
+          {session.id === "rest" ? (
+            <p>Rest day. Unmark it on Gym if you’re training.</p>
+          ) : (
+            <ul className="compact">
+              {session.items.slice(0, 4).map((item) => (
+                <li key={item.id}>
+                  {item.name} — {rxLine(item)}
+                </li>
+              ))}
+            </ul>
+          )}
         </article>
 
         <article className="panel">
@@ -82,35 +85,27 @@ export default function TodayPage() {
             <Macro label="C" value={totals.carbs} goal={targets.carbs} />
             <Macro label="F" value={totals.fat} goal={targets.fat} />
           </div>
-          <p className="muted">{targets.note}</p>
         </article>
       </section>
 
       <section className="panel">
         <header className="panel-head">
           <h2>This week</h2>
-          <Link to="/calendar">calendar</Link>
+          <Link to="/gym">gym</Link>
         </header>
-        <div className="pillar-grid">
-          {pillars.map((pillar) => (
-            <div key={pillar.id} className={`pillar ${pillar.covered ? "is-on" : ""}`}>
-              <strong>{pillar.label}</strong>
-              <span>{pillar.blurb}</span>
-            </div>
-          ))}
-        </div>
         <div className="week-strip">
           {week.weekDates.map((date) => {
-            const dayPlan = week.plan[date];
+            const daySession = sessionForDate(date, week.restMap);
+            const kind = daySession.id === "rest" ? "rest" : "train";
             return (
               <Link
                 key={date}
-                to={dayKind(dayPlan.sessionId) === "rest" || dayKind(dayPlan.sessionId) === "game" ? "/calendar" : "/gym"}
-                className={`week-cell ${date === today ? "is-today" : ""} ${dayKind(dayPlan.sessionId)}`}
+                to="/gym"
+                className={`week-cell ${date === today ? "is-today" : ""} ${kind}`}
               >
                 <b>{weekdayLabel(date)}</b>
                 <span>{date.slice(8)}</span>
-                <em>{getSession(dayPlan.sessionId).short}</em>
+                <em>{daySession.short}</em>
               </Link>
             );
           })}
@@ -121,17 +116,6 @@ export default function TodayPage() {
         <header className="panel-head">
           <h2>Notes</h2>
         </header>
-        <label>
-          Weight we use for food (kg)
-          <input
-            type="number"
-            min="50"
-            max="140"
-            step="0.1"
-            value={state.profile.weightKg}
-            onChange={(event) => patch({ profile: { ...state.profile, weightKg: event.target.value } })}
-          />
-        </label>
         <label>
           Team / rink
           <input

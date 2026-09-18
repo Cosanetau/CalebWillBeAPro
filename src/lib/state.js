@@ -9,6 +9,7 @@ export function emptyState() {
       notes: "Ice hockey in Japan. Train for explosiveness, cardio, recoverability, and strength.",
     },
     games: {},
+    restDays: {},
     restOverrides: {},
     workoutLogs: {},
     foodLogs: {},

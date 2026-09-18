@@ -1,17 +1,15 @@
 import { useMemo, useState } from "react";
-import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
+import { useApp, useDay } from "../lib/useApp.jsx";
 import {
   formatTokyoDate,
-  mondayOfWeek,
   monthGrid,
   tokyoISODate,
   tokyoParts,
   weekdayLabel,
-  weekDatesFromMonday,
   WEEK_DAYS,
 } from "../lib/tokyo.js";
-import { resolveRestDays, restStatus } from "../lib/restDays.js";
-import { dayKind, getSession, planWeek } from "../lib/program.js";
+import { collectRestMap, isRestDay } from "../lib/restDays.js";
+import { calendarKind, sessionForDate } from "../lib/program.js";
 
 export default function CalendarPage() {
   const now = tokyoParts();
@@ -19,32 +17,28 @@ export default function CalendarPage() {
   const [cursor, setCursor] = useState({ year: now.year, month: now.month });
   const [selected, setSelected] = useState(today);
   const { state } = useApp();
-  const week = useWeek(selected);
   const day = useDay(selected);
-  const rest = restStatus(week.weekDates, week.restDays);
+  const restMap = collectRestMap(state);
   const cells = useMemo(() => monthGrid(cursor.year, cursor.month), [cursor]);
   const monthLabel = new Intl.DateTimeFormat("en-GB", {
     month: "long",
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(Date.UTC(cursor.year, cursor.month - 1, 1)));
+  const session = sessionForDate(selected, restMap);
+  const kind = calendarKind({ isGame: Boolean(day.game), isRest: session.id === "rest" });
 
   function shiftMonth(delta) {
     const date = new Date(Date.UTC(cursor.year, cursor.month - 1 + delta, 1));
     setCursor({ year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 });
   }
 
-  const planned = week.plan[selected];
-  const session = getSession(planned?.sessionId);
-
   return (
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Calendar</p>
         <h1>The month</h1>
-        <p className="lede">
-          Put the games in. The two rest days come from those, in Tokyo time.
-        </p>
+        <p className="lede">Games go here. Gym is the set week unless you mark rest.</p>
       </section>
 
       <section className="panel">
@@ -64,18 +58,15 @@ export default function CalendarPage() {
             </div>
           ))}
           {cells.map((cell) => {
-            const weekDates = weekDatesFromMonday(mondayOfWeek(cell.iso));
-            const restDays = resolveRestDays(weekDates, state.games, state.restOverrides);
-            const restOk = restDays.length === 2;
-            const cellPlan = planWeek({ weekDates, restDays, games: state.games })[cell.iso];
-            const kind = restOk || state.games[cell.iso] ? dayKind(cellPlan?.sessionId) : "";
+            const cellRest = isRestDay(cell.iso, restMap);
             const hasGame = Boolean(state.games[cell.iso]);
             const hasFood = (state.foodLogs[cell.iso]?.meals || []).length > 0;
+            const cellKind = calendarKind({ isGame: hasGame, isRest: cellRest });
             return (
               <button
                 key={cell.iso}
                 type="button"
-                className={`month-cell ${cell.inMonth ? "" : "is-out"} ${cell.iso === selected ? "is-selected" : ""} ${cell.iso === today ? "is-today" : ""} ${kind}`}
+                className={`month-cell ${cell.inMonth ? "" : "is-out"} ${cell.iso === selected ? "is-selected" : ""} ${cell.iso === today ? "is-today" : ""} ${cellKind}`}
                 onClick={() => {
                   setSelected(cell.iso);
                   const [year, month] = cell.iso.split("-").map(Number);
@@ -85,8 +76,8 @@ export default function CalendarPage() {
                 <b>{Number(cell.iso.slice(8))}</b>
                 <span className="dots">
                   {hasGame ? <i className="dot game" /> : null}
-                  {restOk && kind === "rest" ? <i className="dot rest" /> : null}
-                  {restOk && kind === "train" ? <i className="dot train" /> : null}
+                  {cellRest ? <i className="dot rest" /> : null}
+                  {!cellRest ? <i className="dot train" /> : null}
                   {hasFood ? <i className="dot food" /> : null}
                 </span>
               </button>
@@ -115,16 +106,9 @@ export default function CalendarPage() {
             <p className="kicker">{weekdayLabel(selected)}</p>
             <h2>{formatTokyoDate(selected)}</h2>
           </div>
-          <span className={`chip ${dayKind(session.id)}`}>{session.short}</span>
+          <span className={`chip ${kind}`}>{session.short}</span>
         </header>
-        <p>{planned?.reason}</p>
-        {!rest.ok ? (
-          <p className="callout">This Tokyo week still needs two rest days from its games.</p>
-        ) : (
-          <p className="muted">
-            Week rest days: {week.restDays.map((date) => `${weekdayLabel(date)} ${date.slice(8)}`).join(" · ")}
-          </p>
-        )}
+        <p>{session.intent}</p>
 
         <div className="game-form">
           <label className="check pill">

@@ -298,9 +298,37 @@ textarea {
 .pillar.is-on { background: var(--train); border-style: solid; }
 .pillar span { font-size: 12px; line-height: 1.35; color: var(--muted); }
 
-.compact { display: grid; gap: 6px; padding: 0; margin: 10px 0; list-style: none; }
-.compact li { padding-left: 1ch; }
-.compact li::before { content: "- "; }
+.weigh-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+.weigh-row label { margin-top: 0; }
+.rest-toggle { margin: 0 0 8px; min-height: 42px; }
+
+.work-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 0;
+}
+.work-list li {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ink);
+}
+.work-list strong {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+}
+.work-list em {
+  font-style: normal;
+  color: var(--muted);
+}
 
 .block { margin-top: 14px; }
 .block ul { margin: 8px 0 0; padding-left: 18px; }

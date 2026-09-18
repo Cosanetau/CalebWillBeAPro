@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const POINTS = [
   "Nicola de Vos is entitled to claim at least 73% of the credit for anything impressive Caleb ever achieves.",
   "If Caleb becomes a professional hockey player, Nicola must immediately receive unlimited bragging rights and permission to say, “Yeah, I basically made that happen.”",
@@ -10,24 +12,36 @@ const POINTS = [
 ];
 
 export default function TermsFoot() {
+  const [open, setOpen] = useState(false);
+
   return (
     <footer className="site-foot">
-      <article className="terms-card">
-        <h2>
-          Definitely Not Legally Binding Terms <span className="amp">&amp;</span> Conditions
-        </h2>
-        <p>By viewing this website, you agree to the following extremely serious conditions:</p>
-        <ol>
-          {POINTS.map((point) => (
-            <li key={point}>{point}</li>
-          ))}
-        </ol>
-        <p className="terms-thanks">
-          Most importantly, thank you, Nicola de Vos, for helping me chase something that means everything to me. I
-          genuinely wouldn’t have the confidence to go after this dream without your support, honesty and willingness to
-          help me become better.
-        </p>
-      </article>
+      <button
+        type="button"
+        className="terms-toggle"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        T&Cs
+      </button>
+      {open ? (
+        <article className="terms-card">
+          <h2>
+            Definitely Not Legally Binding Terms <span className="amp">&amp;</span> Conditions
+          </h2>
+          <p>By viewing this website, you agree to the following extremely serious conditions:</p>
+          <ol>
+            {POINTS.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ol>
+          <p className="terms-thanks">
+            Most importantly, thank you, Nicola de Vos, for helping me chase something that means everything to me. I
+            genuinely wouldn’t have the confidence to go after this dream without your support, honesty and willingness
+            to help me become better.
+          </p>
+        </article>
+      ) : null}
     </footer>
   );
 }

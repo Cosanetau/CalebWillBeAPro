@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useApp } from "./lib/useApp.jsx";
-import AccessGate from "./components/AccessGate.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 import Shell from "./components/Shell.jsx";
 import TodayPage from "./pages/TodayPage.jsx";
 import GymPage from "./pages/GymPage.jsx";
@@ -20,7 +20,7 @@ export default function App() {
   }
 
   if (!auth.ok) {
-    return <AccessGate />;
+    return <LoginPage />;
   }
 
   return (

@@ -141,29 +141,23 @@ p { margin: 0; }
 .tokyo-clock strong { font-size: 18px; }
 .tokyo-clock span { color: #8fb4cc; font-size: 12px; font-weight: 700; }
 
-.actor-toggle {
-  display: flex;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.actor-toggle button, .icon-btn, .text-btn, .btn, .week-cell.button, .month-cell, .food-card {
-  cursor: pointer;
-  border: 0;
-  background: transparent;
-}
-
-.actor-toggle button {
+.who {
+  display: inline-flex;
+  align-items: center;
   min-height: 34px;
-  padding: 0 10px;
+  padding: 0 12px;
   border-radius: 999px;
-  color: #9ec4de;
+  background: var(--blue);
+  color: white;
   font-size: 12px;
   font-weight: 800;
 }
 
-.actor-toggle button.is-on { background: var(--blue); color: white; }
+.icon-btn, .text-btn, .btn, .week-cell.button, .month-cell, .food-card {
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+}
 
 .icon-btn {
   width: 38px;
@@ -475,7 +469,6 @@ textarea { resize: vertical; }
 @media (max-width: 640px) {
   .topbar { flex-wrap: wrap; }
   .topbar-meta { width: 100%; justify-content: space-between; }
-  .topbar-meta .actor-toggle { display: flex; }
   .brand-sub { display: none; }
   .pillar-grid, .macro-row.large, .grid-2 { grid-template-columns: 1fr; }
   .site-foot { flex-direction: column; margin-bottom: 96px; }

@@ -3,7 +3,7 @@ import { addDaysISO, mondayOfWeek, tokyoISODate, weekDatesContaining, weekdayInd
 import { resolveRestDays, restStatus, suggestRestDays } from "./restDays.js";
 import { dayKind, planWeek, pillarsCovered } from "./program.js";
 import { mealTotals, remaining, targetsFor } from "./nutrition.js";
-import { accessWordError } from "./access.js";
+import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
 
 describe("tokyo week math", () => {
   it("treats Monday as the start of the training week", () => {
@@ -95,11 +95,13 @@ describe("nutrition targets", () => {
   });
 });
 
-describe("access word", () => {
-  it("rejects empty or spaced words", () => {
-    expect(accessWordError("")).toMatch(/shared access word/i);
-    expect(accessWordError("too open", { creating: true })).toMatch(/one word/i);
-    expect(accessWordError("pro", { creating: true })).toMatch(/4/);
-    expect(accessWordError("willbeapro", { creating: true })).toBe("");
+describe("login", () => {
+  it("maps usernames to hidden login emails and roles", () => {
+    expect(usernameToEmail("Nix")).toBe("nix@login.cwbp.cosa.net.au");
+    expect(roleForUsername("Nix")).toBe("nutritionist");
+    expect(roleForUsername("Caleb")).toBe("caleb");
+    expect(loginFieldError({ username: "", password: "x" })).toMatch(/username/i);
+    expect(loginFieldError({ username: "Nix", password: "" })).toMatch(/password/i);
+    expect(loginFieldError({ username: "Nix", password: "secret" })).toBe("");
   });
 });

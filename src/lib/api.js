@@ -1,93 +1,27 @@
-import { emptyState } from "./state.js";
-import {
-  localAuthStatus,
-  localLock,
-  localUnlock,
-  persistUsesApi,
-  publicLocalState,
-  readLocalState,
-  writeLocalState,
-} from "./localStore.js";
+import { loginFieldError, usernameToEmail } from "./accounts.js";
+import { supabase } from "./supabase.js";
 
-let mode = "local";
-
-async function request(url, options = {}) {
-  const response = await fetch(url, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(data.error || "Request failed");
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-  return data;
-}
-
-export async function fetchAuth() {
+export async function seedAccounts() {
   try {
-    const remote = await request("/api/auth");
-    if (persistUsesApi(remote.persist)) {
-      mode = "api";
-      return remote;
-    }
+    await fetch("/api/seed", { method: "POST" });
   } catch {
-    // Vercel without a durable store, or a static-only deploy.
+    // Seed is best-effort. Login still works if the users already exist.
   }
-  mode = "local";
-  return localAuthStatus();
 }
 
-export async function submitAccessWord(word) {
-  if (mode === "api") {
-    return request("/api/auth", {
-      method: "POST",
-      body: JSON.stringify({ word }),
-    });
+export async function signIn(username, password) {
+  const error = loginFieldError({ username, password });
+  if (error) throw new Error(error);
+
+  const { error: authError } = await supabase.auth.signInWithPassword({
+    email: usernameToEmail(username),
+    password,
+  });
+  if (authError) {
+    throw new Error("That username or password is not right.");
   }
-  return localUnlock(word);
 }
 
 export async function signOut() {
-  if (mode === "api") {
-    try {
-      await request("/api/auth", { method: "DELETE" });
-    } catch {
-      // Still lock the browser copy.
-    }
-  }
-  localLock();
-}
-
-export async function loadState() {
-  if (mode === "api") {
-    const { state } = await request("/api/state");
-    return { ...emptyState(), ...state };
-  }
-  return publicLocalState();
-}
-
-export async function saveState(state) {
-  if (mode === "api") {
-    const { sessions, ...safe } = state;
-    const { state: next } = await request("/api/state", {
-      method: "PUT",
-      body: JSON.stringify({ state: safe }),
-    });
-    return { ...emptyState(), ...next };
-  }
-  const current = readLocalState();
-  return publicLocalState(
-    writeLocalState({
-      ...current,
-      ...state,
-      accessWordHash: current.accessWordHash,
-    })
-  );
+  await supabase.auth.signOut();
 }

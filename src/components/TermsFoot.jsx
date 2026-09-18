@@ -13,7 +13,9 @@ export default function TermsFoot() {
   return (
     <footer className="site-foot">
       <article className="terms-card">
-        <h2>Definitely Not Legally Binding Terms & Conditions</h2>
+        <h2>
+          Definitely Not Legally Binding Terms <span className="amp">&amp;</span> Conditions
+        </h2>
         <p>By viewing this website, you agree to the following extremely serious conditions:</p>
         <ol>
           {POINTS.map((point) => (

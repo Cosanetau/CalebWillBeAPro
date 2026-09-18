@@ -8,7 +8,6 @@ import {
   remaining,
   resolveTargets,
   scaleRecipe,
-  weekBuyList,
   nutritionBits,
 } from "../lib/nutrition.js";
 import { foodKind } from "../lib/program.js";
@@ -28,7 +27,6 @@ export default function FoodPage() {
   const targets = resolveTargets(state.nutritionTargets);
   const totals = mealTotals(day.food.meals);
   const left = remaining(targets, totals);
-  const shop = weekBuyList(week.weekDates, state.foodLogs);
   const recipes = useMemo(
     () =>
       [...(state.foods || [])]
@@ -75,29 +73,8 @@ export default function FoodPage() {
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Food · {auth.username}</p>
-        <h1>The kitchen</h1>
-        <p className="lede">Pick from the cookbook onto a day. The shop list fills itself for the week.</p>
-      </section>
-
-      <section className="panel">
-        <header className="panel-head">
-          <h2>This week’s shop</h2>
-        </header>
-        {shop.length ? (
-          <ul className="shop-list">
-            {shop.map((item) => (
-              <li key={`${item.name}-${item.unit}`}>
-                <strong>{item.name}</strong>
-                <span>
-                  {amountLine(item) || "as added"}
-                  {showMacros && item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="muted">Nothing to buy yet. Put cookbook food on days and the ingredients show up here.</p>
-        )}
+        <h1>Food</h1>
+        <p className="lede">Pick a day and drop cookbook food onto it.</p>
       </section>
 
       <div className="week-shift">

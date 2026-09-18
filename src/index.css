@@ -119,7 +119,7 @@ h3 {
 }
 .brand-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
-.desktop-nav { display: flex; gap: 16px; }
+.desktop-nav { display: flex; gap: 12px; flex-wrap: wrap; }
 .desktop-nav a, .mobile-nav a {
   font-family: var(--serif);
   font-size: 18px;
@@ -485,7 +485,7 @@ textarea {
   background: var(--paper);
   border-top: 1px solid var(--ink);
 }
-.mobile-nav a { flex: 1; text-align: center; font-size: 14px; }
+.mobile-nav a { flex: 1; text-align: center; font-size: 13px; }
 
 .site-foot {
   display: flex;

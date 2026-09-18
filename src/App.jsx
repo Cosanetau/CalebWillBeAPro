@@ -6,6 +6,7 @@ import TodayPage from "./pages/TodayPage.jsx";
 import GymPage from "./pages/GymPage.jsx";
 import FoodPage from "./pages/FoodPage.jsx";
 import CookbookPage from "./pages/CookbookPage.jsx";
+import GroceryPage from "./pages/GroceryPage.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/gym" element={<GymPage />} />
         <Route path="/food" element={<FoodPage />} />
         <Route path="/cookbook" element={<CookbookPage />} />
+        <Route path="/grocery" element={<GroceryPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

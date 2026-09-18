@@ -488,8 +488,27 @@ textarea {
 .mobile-nav a { flex: 1; text-align: center; font-size: 13px; }
 
 .site-foot {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
   width: min(var(--max), calc(100% - 28px));
   margin: 8px auto 28px;
+}
+.terms-toggle {
+  font-family: var(--marker);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  padding: 6px 10px 4px;
+  border: 1px solid var(--ink);
+  background: var(--sheet);
+  color: var(--ink);
+  cursor: pointer;
+  transform: rotate(-2deg);
+}
+.terms-toggle[aria-expanded="true"] {
+  background: var(--ink);
+  color: var(--sheet);
 }
 .terms-card {
   padding: 18px 16px 16px;

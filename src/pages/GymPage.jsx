@@ -103,51 +103,54 @@ export default function GymPage() {
         <header className="panel-head">
           <div>
             <p className="kicker">{formatDate(selected, { year: undefined })}</p>
-            <h2>{session.title}</h2>
+            <h2>{isGame ? "Game day" : session.title}</h2>
           </div>
         </header>
-        <p>{session.intent}</p>
-
         {isGame ? (
-          <p className="muted">No gym today. Only the game.</p>
-        ) : rest ? (
-          <p className="muted">Off gym today. Uncheck rest if you’re training.</p>
+          <p>No gym today. Only the game.</p>
         ) : (
-          (session.sections || []).map((block) => (
-            <div className="block" key={block.name}>
-              <h3>{block.name}</h3>
-              {block.note ? <p className="hint">{block.note}</p> : null}
-              <ol className="work-list">
-                {block.items.map((entry) => {
-                  const log = day.workout.completed?.[entry.id] || {};
-                  return (
-                    <li key={entry.id}>
-                      <label className="check">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(log.done)}
-                          onChange={(event) => setItem(entry, { done: event.target.checked })}
-                        />
-                        <span>
-                          <strong>{entry.name}</strong>
-                          <em>{rxLine(entry)}</em>
-                          {entry.cue ? <small>{entry.cue}</small> : null}
-                        </span>
-                      </label>
-                      {entry.load ? (
-                        <input
-                          className="inline"
-                          placeholder="kg"
-                          value={log.detail || ""}
-                          onChange={(event) => setItem(entry, { detail: event.target.value })}
-                        />
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ol>
-            </div>
-          ))
+          <>
+            <p>{session.intent}</p>
+            {rest ? (
+              <p className="muted">Off gym today. Uncheck rest if you’re training.</p>
+            ) : (
+              (session.sections || []).map((block) => (
+                <div className="block" key={block.name}>
+                  <h3>{block.name}</h3>
+                  {block.note ? <p className="hint">{block.note}</p> : null}
+                  <ol className="work-list">
+                    {block.items.map((entry) => {
+                      const log = day.workout.completed?.[entry.id] || {};
+                      return (
+                        <li key={entry.id}>
+                          <label className="check">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(log.done)}
+                              onChange={(event) => setItem(entry, { done: event.target.checked })}
+                            />
+                            <span>
+                              <strong>{entry.name}</strong>
+                              <em>{rxLine(entry)}</em>
+                              {entry.cue ? <small>{entry.cue}</small> : null}
+                            </span>
+                          </label>
+                          {entry.load ? (
+                            <input
+                              className="inline"
+                              placeholder="kg"
+                              value={log.detail || ""}
+                              onChange={(event) => setItem(entry, { detail: event.target.value })}
+                            />
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              ))
+            )}
+          </>
         )}
 
         {isGame || rest ? null : (
@@ -160,9 +163,11 @@ export default function GymPage() {
             />
           </label>
         )}
-        <p className="muted">
-          {isGame ? "Game day. No gym." : rest ? "Rest." : `${completedCount} of ${items.length} done.`} Logged as {auth.username}.
-        </p>
+        {isGame ? null : (
+          <p className="muted">
+            {rest ? "Rest." : `${completedCount} of ${items.length} done.`} Logged as {auth.username}.
+          </p>
+        )}
       </section>
     </div>
   );

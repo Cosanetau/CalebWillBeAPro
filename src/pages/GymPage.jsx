@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
-import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
+import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { isRestDay } from "../lib/restDays.js";
 import { sessionForDate } from "../lib/program.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 
 export default function GymPage() {
-  const today = tokyoISODate();
+  const today = localISODate();
   const [selected, setSelected] = useState(today);
   const { state, patch, actor, auth } = useApp();
   const week = useWeek(selected);
@@ -97,7 +97,7 @@ export default function GymPage() {
       <section className="panel session-panel">
         <header className="panel-head">
           <div>
-            <p className="kicker">{formatTokyoDate(selected, { year: undefined })}</p>
+            <p className="kicker">{formatDate(selected, { year: undefined })}</p>
             <h2>{session.title}</h2>
           </div>
         </header>

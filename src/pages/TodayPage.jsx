@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
-import { formatTokyoDate, tokyoISODate, weekdayLabel } from "../lib/tokyo.js";
+import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { foodKind, sessionForDate } from "../lib/program.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { mealTotals, targetsFor } from "../lib/nutrition.js";
 
 export default function TodayPage() {
   const { state, patch } = useApp();
-  const today = tokyoISODate();
+  const today = localISODate();
   const week = useWeek(today);
   const day = useDay(today);
   const session = sessionForDate(today, week.restMap);
@@ -24,7 +24,7 @@ export default function TodayPage() {
     <div className="stack">
       <section className="hero-card">
         <p className="kicker">Today</p>
-        <h1>{formatTokyoDate(today)}</h1>
+        <h1>{formatDate(today)}</h1>
         <p className="lede">{session.intent}</p>
         <div className="chip-row">
           <span className={`chip ${session.id === "rest" ? "rest" : "train"}`}>{session.title}</span>

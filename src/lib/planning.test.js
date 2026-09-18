@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { addDaysISO, mondayOfWeek, tokyoISODate, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./tokyo.js";
+import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
 import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { mealTotals, remaining, targetsFor } from "./nutrition.js";
+import { mealTotals, remaining, targetsFor, weekBuyList } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, usernameToEmail } from "./accounts.js";
 
-describe("tokyo week math", () => {
+describe("week math", () => {
   it("treats Monday as the start of the training week", () => {
     expect(mondayOfWeek("2026-09-18")).toBe("2026-09-14");
     expect(weekdayLabel("2026-09-18")).toBe("Fri");
@@ -23,8 +23,11 @@ describe("tokyo week math", () => {
     expect(addDaysISO("2026-09-20", 1)).toBe("2026-09-21");
   });
 
-  it("formats a Tokyo civil date from a UTC instant", () => {
-    expect(tokyoISODate(new Date("2026-09-17T16:00:00Z"))).toBe("2026-09-18");
+  it("uses the local civil date", () => {
+    const instant = new Date("2026-09-17T12:00:00Z");
+    const parts = localParts(instant);
+    const pad = (value) => String(value).padStart(2, "0");
+    expect(localISODate(instant)).toBe(`${parts.year}-${pad(parts.month)}-${pad(parts.day)}`);
   });
 });
 
@@ -85,6 +88,26 @@ describe("nutrition targets", () => {
     ]);
     expect(totals.protein).toBe(70);
     expect(remaining(game, totals).protein).toBe(game.protein - 70);
+  });
+});
+
+describe("week shop list", () => {
+  it("adds up the same ingredient across the week", () => {
+    const week = weekDatesContaining("2026-09-18");
+    const list = weekBuyList(week, {
+      "2026-09-14": {
+        meals: [{ name: "Chicken", amount: 400, unit: "g", kcal: 440, protein: 80, carbs: 0, fat: 10 }],
+      },
+      "2026-09-16": {
+        meals: [{ name: "chicken", amount: 200, unit: "g", kcal: 220, protein: 40, carbs: 0, fat: 5 }],
+      },
+      "2026-09-17": {
+        meals: [{ name: "Rice", amount: 150, unit: "g", kcal: 180, protein: 4, carbs: 40, fat: 0 }],
+      },
+    });
+    expect(list).toHaveLength(2);
+    expect(list[0]).toMatchObject({ name: "Chicken", amount: 600, unit: "g", protein: 120 });
+    expect(list[1]).toMatchObject({ name: "Rice", amount: 150, unit: "g" });
   });
 });
 

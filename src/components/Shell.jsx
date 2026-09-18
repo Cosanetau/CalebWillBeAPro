@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { tokyoClock, tokyoISODate, formatTokyoDate } from "../lib/tokyo.js";
+import { formatDate, localClock, localISODate, localTimeZone } from "../lib/dates.js";
 import { useApp } from "../lib/useApp.jsx";
 
 const links = [
@@ -27,14 +27,14 @@ export default function Shell() {
     return () => clearTimeout(timer);
   }, [savedAt]);
 
-  const today = tokyoISODate(now);
+  const today = localISODate(now);
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-block">
           <p className="brand-name">Caleb will be a pro</p>
-          <p className="brand-sub">hockey log · Tokyo</p>
+          <p className="brand-sub">hockey log</p>
         </div>
 
         <nav className="desktop-nav">
@@ -46,9 +46,9 @@ export default function Shell() {
         </nav>
 
         <div className="topbar-meta">
-          <div className="tokyo-clock" title="Asia/Tokyo">
-            <strong>{tokyoClock(now)}</strong>
-            <span>{formatTokyoDate(today, { weekday: "short", month: "short", year: undefined })}</span>
+          <div className="local-clock" title={localTimeZone()}>
+            <strong>{localClock(now)}</strong>
+            <span>{formatDate(today, { weekday: "short", month: "short", year: undefined })}</span>
           </div>
           <div className="who">{auth.username}</div>
           <button type="button" className="text-btn" onClick={lock}>
@@ -74,7 +74,6 @@ export default function Shell() {
 
       <footer className="site-foot">
         <span>Caleb + Nix</span>
-        <span>Tokyo time</span>
       </footer>
     </div>
   );

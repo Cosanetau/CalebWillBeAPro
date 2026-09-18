@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek } from "./restDays.js";
-import { dayKind, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealTotals, remaining, scaleCatalogFood, targetsFor, weekBuyList, nutritionBits } from "./nutrition.js";
+import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionIdForWeekday } from "./program.js";
+import { formatWeightKg, mealTotals, remaining, resolveTargets, scaleCatalogFood, weekBuyList, nutritionBits } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -64,6 +64,9 @@ describe("week plan", () => {
     expect(dayKind(plan["2026-09-14"].sessionId)).toBe("train");
     expect(foodKind({ isGame: true, isRest: false })).toBe("game");
     expect(foodKind({ isGame: false, isRest: true })).toBe("rest");
+    expect(dayTypeLabel({ isGame: true, isRest: false })).toBe("Game day");
+    expect(dayTypeLabel({ isGame: false, isRest: true })).toBe("Rest day");
+    expect(dayTypeLabel({ isGame: false, isRest: false })).toBe("Gym day");
   });
 
   it("keeps the Monday hockey work as written", () => {
@@ -76,18 +79,21 @@ describe("week plan", () => {
 });
 
 describe("nutrition targets", () => {
-  it("scales macros to body weight and day type", () => {
-    const game = targetsFor("game", 80);
-    const rest = targetsFor("rest", 80);
-    expect(game.carbs).toBeGreaterThan(rest.carbs);
-    expect(game.kcal).toBeGreaterThan(rest.kcal);
+  it("keeps required kcal, protein, carbs, and fat until they are changed", () => {
+    expect(resolveTargets(undefined)).toMatchObject({ kcal: 3600, protein: 160, carbs: 490, fat: 80 });
+    expect(resolveTargets({ kcal: 3200, protein: 170, carbs: 300, fat: 70 })).toMatchObject({
+      kcal: 3200,
+      protein: 170,
+      carbs: 300,
+      fat: 70,
+    });
 
     const totals = mealTotals([
       { kcal: 600, protein: 40, carbs: 70, fat: 16 },
       { kcal: 400, protein: 30, carbs: 40, fat: 10 },
     ]);
     expect(totals.protein).toBe(70);
-    expect(remaining(game, totals).protein).toBe(game.protein - 70);
+    expect(remaining(resolveTargets({ protein: 80 }), totals).protein).toBe(10);
   });
 });
 

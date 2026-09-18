@@ -5,12 +5,12 @@ import {
   amountLine,
   mealTotals,
   remaining,
+  resolveTargets,
   scaleCatalogFood,
-  targetsFor,
   weekBuyList,
   nutritionBits,
 } from "../lib/nutrition.js";
-import { foodKind, getSession } from "../lib/program.js";
+import { foodKind } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { emptyCatalogFood, newId } from "../lib/state.js";
 import { seesNutrition } from "../lib/accounts.js";
@@ -27,12 +27,7 @@ export default function FoodPage() {
   const showMacros = seesNutrition(auth.role);
   const week = useWeek(selected);
   const day = useDay(selected);
-  const session = getSession(week.plan[selected]?.sessionId);
-  const kind = foodKind({
-    isGame: Boolean(state.games[selected]),
-    isRest: session.id === "rest",
-  });
-  const targets = targetsFor(kind, Number(day.food.weightKg || state.profile.weightKg) || 82);
+  const targets = resolveTargets(state.nutritionTargets);
   const totals = mealTotals(day.food.meals);
   const left = remaining(targets, totals);
   const shop = weekBuyList(week.weekDates, state.foodLogs);
@@ -125,6 +120,15 @@ export default function FoodPage() {
 
   function removeMeal(id) {
     day.setFood({ meals: day.food.meals.filter((meal) => meal.id !== id) });
+  }
+
+  function setRequired(key, value) {
+    patch({
+      nutritionTargets: {
+        ...targets,
+        [key]: value,
+      },
+    });
   }
 
   return (
@@ -300,18 +304,13 @@ export default function FoodPage() {
           <h2>{formatDate(selected, { year: undefined })}</h2>
         </header>
         {showMacros ? (
-          <>
-            <p className="muted">{targets.label}. {targets.note}</p>
-            <div className="macro-row large">
-              <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
-              <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
-              <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
-              <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
-            </div>
-          </>
-        ) : (
-          <p className="muted">{targets.label}.</p>
-        )}
+          <div className="macro-row large">
+            <Macro label="kcal" value={totals.kcal} goal={targets.kcal} left={left.kcal} />
+            <Macro label="Protein" value={totals.protein} goal={targets.protein} left={left.protein} />
+            <Macro label="Carbs" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
+            <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
+          </div>
+        ) : null}
 
         {foods.length ? (
           <form className="put-form" onSubmit={putOnDay}>
@@ -403,6 +402,32 @@ export default function FoodPage() {
         ) : (
           <p className="muted">Blank. Pick from the book when you know what you’re cooking.</p>
         )}
+      </section>
+
+      <section className="panel">
+        <header className="panel-head">
+          <h2>Required</h2>
+        </header>
+        <p className="muted">Not for every day. Change this when the plan changes.</p>
+        <div className="macro-inputs required-inputs">
+          {[
+            ["kcal", "kcal"],
+            ["protein", "protein"],
+            ["carbs", "carbs"],
+            ["fat", "fat"],
+          ].map(([key, label]) => (
+            <label key={key}>
+              {label}
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={state.nutritionTargets?.[key] ?? targets[key]}
+                onChange={(event) => setRequired(key, event.target.value)}
+              />
+            </label>
+          ))}
+        </div>
       </section>
     </div>
   );

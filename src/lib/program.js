@@ -38,6 +38,12 @@ export function foodKind({ isGame, isRest }) {
   return "train";
 }
 
+export function dayTypeLabel({ isGame, isRest }) {
+  if (isGame) return "Game day";
+  if (isRest) return "Rest day";
+  return "Gym day";
+}
+
 export function calendarKind({ isGame, isRest }) {
   if (isGame) return "game";
   if (isRest) return "rest";

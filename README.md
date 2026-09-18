@@ -9,9 +9,9 @@ This repository is this site only.
 ## What it does
 
 - **Gym, Monday–Sunday**, a set ice-hockey session each day (agility, aerobic, recovery, strength, intervals, long bike, core). Rest only if you mark it.
-- **Weigh-in every day** on Gym or Today. That number shows on the calendar square for that day.
+- **Weigh-in every day** on Gym or Today. That number shows on the calendar square, under the date.
 - **Food** is a book you edit (chicken, rice, whatever you eat). Pick foods onto whatever day you’re cooking. The week’s shop list fills from those days. No check-in on Food. **Nix** can see calories, protein, carbs, and fat.
-- **Built-in calendar** in local time.
+- **Built-in calendar** in local time. Each day has a Game tick box and a Rest tick box.
 - **Logins:** Caleb and Nix each have a username and password.
 
 ## Logins

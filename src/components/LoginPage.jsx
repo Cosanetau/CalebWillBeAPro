@@ -57,7 +57,7 @@ export default function LoginPage() {
           </label>
           {error ? <p className="form-error">{error}</p> : null}
           <button className="btn" type="submit" disabled={busy}>
-            {busy ? "Hang on…" : "Come in"}
+            {busy ? "Hang on dumbass" : "Come in"}
           </button>
         </form>
       </section>

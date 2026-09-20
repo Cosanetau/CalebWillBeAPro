@@ -1,7 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
 
+export function normalizeSupabaseUrl(raw) {
+  const trimmed = String(raw || "").trim();
+  if (!trimmed) return "";
+  try {
+    const url = new URL(trimmed);
+    return url.origin;
+  } catch {
+    return trimmed.replace(/\/+$/, "").replace(/\/rest\/v1$/i, "");
+  }
+}
+
 export function supabaseUrl() {
-  return process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
+  return normalizeSupabaseUrl(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "");
 }
 
 export function supabaseAnonKey() {
@@ -57,6 +68,9 @@ export function explainSupabaseError(error) {
   }
   if (combined.includes("schema cache") || combined.includes("does not exist") || combined.includes("could not find the table")) {
     return "The tables are missing. Run supabase/schema.sql in the Supabase SQL editor, then try again.";
+  }
+  if (combined.includes("invalid path") || combined.includes("rest/v1")) {
+    return "SUPABASE_URL should be https://xxxx.supabase.co with nothing after .co — drop /rest/v1/";
   }
   if (combined.includes("jwt") || combined.includes("invalid api key") || combined.includes("unauthorized")) {
     return "Supabase URL and service role key do not match the same project.";

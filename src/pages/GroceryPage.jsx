@@ -60,6 +60,7 @@ export default function GroceryPage() {
                 <span>
                   {amountLine(item) || "as added"}
                   {showMacros && item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
+                  {showMacros && item.sodium ? ` · Na ${Math.round(item.sodium)}` : ""}
                 </span>
               </li>
             ))}

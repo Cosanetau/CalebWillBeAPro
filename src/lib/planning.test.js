@@ -90,22 +90,26 @@ describe("week plan", () => {
 });
 
 describe("nutrition targets", () => {
-  it("keeps required kcal, protein, carbs, and fat until they are changed", () => {
-    expect(resolveTargets(undefined)).toMatchObject({ kcal: 3600, protein: 160, carbs: 490, fat: 80 });
-    expect(resolveTargets({ kcal: 3200, protein: 170, carbs: 300, fat: 70 })).toMatchObject({
+  it("keeps required kcal, protein, carbs, fat, and sodium until they are changed", () => {
+    expect(resolveTargets(undefined)).toMatchObject({ kcal: 3600, protein: 160, carbs: 490, fat: 80, sodium: 2300 });
+    expect(resolveTargets({ kcal: 3200, protein: 170, carbs: 300, fat: 70, sodium: 2800 })).toMatchObject({
       kcal: 3200,
       protein: 170,
       carbs: 300,
       fat: 70,
+      sodium: 2800,
     });
 
     const totals = mealTotals([
-      { kcal: 600, protein: 40, carbs: 70, fat: 16 },
-      { kcal: 400, protein: 30, carbs: 40, fat: 10 },
+      { kcal: 600, protein: 40, carbs: 70, fat: 16, sodium: 400 },
+      { kcal: 400, protein: 30, carbs: 40, fat: 10, sodium: 200 },
     ]);
     expect(totals.protein).toBe(70);
-    expect(remaining(resolveTargets({ protein: 80 }), totals).protein).toBe(10);
+    expect(totals.sodium).toBe(600);
+    expect(remaining(resolveTargets({ protein: 80, sodium: 800 }), totals).protein).toBe(10);
+    expect(remaining(resolveTargets({ sodium: 800 }), totals).sodium).toBe(200);
     expect(inForDayLine(600, 3000, "cal")).toBe("600 cal/3000");
+    expect(inForDayLine(800, 2300, "mg")).toBe("800 mg/2300");
     expect(inForDayLine(80, 160)).toBe("80/160");
     expect(inForDayLine(0, 3100, "cal")).toBe("0 cal/3100");
   });
@@ -168,8 +172,8 @@ describe("cookbook", () => {
         id: "bowl",
         name: "Rice bowl",
         ingredients: [
-          { name: "Chicken", amount: 100, unit: "g", kcal: 165, protein: 31, carbs: 0, fat: 3.6 },
-          { name: "Rice", amount: 75, unit: "g", kcal: 90, protein: 2, carbs: 20, fat: 0 },
+          { name: "Chicken", amount: 100, unit: "g", kcal: 165, protein: 31, carbs: 0, fat: 3.6, sodium: 80 },
+          { name: "Rice", amount: 75, unit: "g", kcal: 90, protein: 2, carbs: 20, fat: 0, sodium: 5 },
         ],
       },
       2
@@ -180,6 +184,7 @@ describe("cookbook", () => {
       servings: 2,
       kcal: 510,
       protein: 66,
+      sodium: 170,
     });
     expect(meal.ingredients[0]).toMatchObject({ name: "Chicken", amount: 200, kcal: 330 });
   });
@@ -191,12 +196,13 @@ describe("cookbook", () => {
     expect(formatWeightKg(0)).toBe("");
   });
 
-  it("prints kcal, protein, carbs, and fat for Nix", () => {
-    expect(nutritionBits({ kcal: 330, protein: 62, carbs: 0, fat: 7.2 })).toEqual([
+  it("prints kcal, protein, carbs, fat, and sodium for Nix", () => {
+    expect(nutritionBits({ kcal: 330, protein: 62, carbs: 0, fat: 7.2, sodium: 180 })).toEqual([
       "330 kcal",
       "P 62",
       "C 0",
       "F 7.2",
+      "Na 180",
     ]);
   });
 });

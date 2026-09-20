@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   FOOD_UNITS,
+  MACRO_KEYS,
   amountLine,
   asRecipe,
   nutritionBits,
@@ -76,6 +77,7 @@ export default function CookbookPage() {
         protein: Number(ing.protein || 0),
         carbs: Number(ing.carbs || 0),
         fat: Number(ing.fat || 0),
+        sodium: Number(ing.sodium || 0),
       }));
     if (!ingredients.length) return;
     const item = {
@@ -104,7 +106,7 @@ export default function CookbookPage() {
       <section className="hero-card compact">
         <p className="kicker">Cookbook · {auth.username}</p>
         <h1>The book</h1>
-        <p className="lede">Add a food, then the ingredients in it, with kcal, protein, carbs, and fat. Food uses this list for the week.</p>
+        <p className="lede">Add a food, then the ingredients in it, with kcal, protein, carbs, fat, and sodium. Food uses this list for the week.</p>
       </section>
 
       <section className="panel">
@@ -195,9 +197,9 @@ export default function CookbookPage() {
                   </label>
                 </div>
                 <div className="macro-inputs">
-                  {["kcal", "protein", "carbs", "fat"].map((key) => (
+                  {MACRO_KEYS.map((key) => (
                     <label key={key}>
-                      {key}
+                      {key === "sodium" ? "sodium (mg)" : key}
                       <input
                         type="number"
                         min="0"

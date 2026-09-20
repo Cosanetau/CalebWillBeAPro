@@ -191,26 +191,9 @@ export default function CalendarPage() {
                   onChange={(event) => day.setGame({ location: event.target.value })}
                 />
               </label>
-              <label>
-                Game note
-                <input
-                  value={day.game.notes || ""}
-                  onChange={(event) => day.setGame({ notes: event.target.value })}
-                />
-              </label>
             </div>
           </div>
         ) : null}
-
-        <label>
-          Day note
-          <textarea
-            rows="3"
-            value={day.note}
-            onChange={(event) => day.setNote(event.target.value)}
-            placeholder="Travel, physio, sleep, rink time…"
-          />
-        </label>
       </section>
     </div>
   );

@@ -168,7 +168,6 @@ export function useDay(isoDate) {
   const food = state.foodLogs[isoDate] || emptyFoodDay();
   const workout = state.workoutLogs[isoDate] || emptyWorkoutDay();
   const game = state.games[isoDate] || null;
-  const note = state.calendarNotes[isoDate] || "";
 
   function setFood(next) {
     patch({
@@ -191,18 +190,9 @@ export function useDay(isoDate) {
   function setGame(next) {
     const games = { ...state.games };
     if (!next) delete games[isoDate];
-    else games[isoDate] = { time: "14:00", opponent: "", location: "", notes: "", ...game, ...next };
+    else games[isoDate] = { time: "14:00", opponent: "", location: "", ...game, ...next };
     patch({ games });
   }
 
-  function setNote(value) {
-    patch({
-      calendarNotes: {
-        ...state.calendarNotes,
-        [isoDate]: value,
-      },
-    });
-  }
-
-  return { food, workout, game, note, setFood, setWorkout, setGame, setNote };
+  return { food, workout, game, setFood, setWorkout, setGame };
 }

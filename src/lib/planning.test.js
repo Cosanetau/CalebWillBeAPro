@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionForDate, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS, inForDayLine, targetDraft, mergeTargetDraft, commitTargetDraft } from "./nutrition.js";
+import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS, inForDayLine, targetDraft, mergeTargetDraft, commitTargetDraft, shopItemKey, isGroceryBought, toggleGroceryBought, sortShopList } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -151,6 +151,19 @@ describe("week shop list", () => {
     });
     expect(list.map((item) => item.name)).toEqual(["Chicken", "Rice"]);
     expect(list[0].amount).toBe(200);
+  });
+
+  it("ticks a shop item for that week and drops bought food to the bottom", () => {
+    const monday = "2026-09-14";
+    const chicken = { name: "Chicken", unit: "g" };
+    const rice = { name: "Rice", unit: "g" };
+    expect(shopItemKey(chicken)).toBe("chicken|g");
+    const bought = toggleGroceryBought({}, monday, chicken);
+    expect(isGroceryBought(bought, monday, chicken)).toBe(true);
+    expect(isGroceryBought(bought, monday, rice)).toBe(false);
+    expect(isGroceryBought(bought, "2026-09-21", chicken)).toBe(false);
+    expect(sortShopList([rice, chicken], bought, monday).map((item) => item.name)).toEqual(["Rice", "Chicken"]);
+    expect(isGroceryBought(toggleGroceryBought(bought, monday, chicken), monday, chicken)).toBe(false);
   });
 });
 

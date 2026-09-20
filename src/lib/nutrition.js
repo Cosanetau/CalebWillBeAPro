@@ -88,11 +88,22 @@ export function resolveTargets(saved) {
 }
 
 export function targetDraft(saved) {
-  return Object.fromEntries(MACRO_KEYS.map((key) => [key, saved?.[key] ?? ""]));
+  const resolved = resolveTargets(saved);
+  return Object.fromEntries(MACRO_KEYS.map((key) => [key, String(resolved[key])]));
 }
 
 export function mergeTargetDraft(saved, draft) {
   return { ...(saved || {}), ...(draft || {}) };
+}
+
+export function commitTargetDraft(saved, draft) {
+  const current = resolveTargets(saved);
+  const next = { ...current };
+  for (const key of MACRO_KEYS) {
+    const value = Number(draft?.[key]);
+    if (Number.isFinite(value) && value > 0) next[key] = value;
+  }
+  return next;
 }
 
 export function remaining(targets, totals) {

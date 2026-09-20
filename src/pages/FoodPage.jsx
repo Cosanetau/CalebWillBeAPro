@@ -12,8 +12,8 @@ import {
   nutritionBits,
   inForDayLine,
   MACRO_KEYS,
-  mergeTargetDraft,
   targetDraft,
+  commitTargetDraft,
 } from "../lib/nutrition.js";
 import { foodKind } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
@@ -77,17 +77,21 @@ export default function FoodPage() {
 
   function setRequired(key, value) {
     requiredDirty.current = true;
-    setRequiredDraft((current) => ({ ...current, [key]: value }));
+    setRequiredDraft((current) => {
+      const next = { ...current, [key]: value };
+      requiredDraftRef.current = next;
+      return next;
+    });
   }
 
   function commitRequired() {
     if (!requiredDirty.current) return;
     const draft = requiredDraftRef.current;
     requiredDirty.current = false;
-    patch((current) => ({
-      ...current,
-      nutritionTargets: mergeTargetDraft(current.nutritionTargets, draft),
-    }));
+    patch((current) => {
+      const nutritionTargets = commitTargetDraft(current.nutritionTargets, draft);
+      return { ...current, nutritionTargets };
+    });
   }
 
   return (
@@ -234,7 +238,7 @@ export default function FoodPage() {
         <header className="panel-head">
           <h2>Required</h2>
         </header>
-        <p className="muted">Not for every day. Change this when the plan changes.</p>
+        <p className="muted">This is the daily target for every day. Change it when the plan changes.</p>
         <div className="macro-inputs required-inputs">
           {MACRO_KEYS.map((key) => (
             <label key={key}>

@@ -560,6 +560,16 @@ textarea {
 
 @media (max-width: 920px) {
   html { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  body {
+    background:
+      repeating-linear-gradient(
+        transparent,
+        transparent 27px,
+        rgba(90, 130, 170, 0.18) 27px,
+        rgba(90, 130, 170, 0.18) 28px
+      ),
+      var(--paper);
+  }
   .app-shell { padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
   .desktop-nav { display: none; }
   .mobile-nav {
@@ -592,17 +602,6 @@ textarea {
 }
 
 @media (max-width: 640px) {
-  body {
-    background:
-      linear-gradient(90deg, transparent 18px, var(--red) 18px, var(--red) 20px, transparent 20px),
-      repeating-linear-gradient(
-        transparent,
-        transparent 27px,
-        rgba(90, 130, 170, 0.18) 27px,
-        rgba(90, 130, 170, 0.18) 28px
-      ),
-      var(--paper);
-  }
   .topbar {
     flex-wrap: nowrap;
     align-items: center;

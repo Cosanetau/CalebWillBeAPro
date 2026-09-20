@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginFieldError } from "../lib/accounts.js";
 import { useApp } from "../lib/useApp.jsx";
+import { APP_VERSION } from "../lib/version.js";
 
 export default function LoginPage() {
   const { login } = useApp();
@@ -60,6 +61,7 @@ export default function LoginPage() {
             {busy ? "Hang on dumbass" : "Come in"}
           </button>
         </form>
+        <p className="app-ver gate-ver">{APP_VERSION}</p>
       </section>
     </main>
   );

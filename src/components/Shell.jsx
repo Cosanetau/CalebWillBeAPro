@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { formatDate, localClock, localISODate, localTimeZone } from "../lib/dates.js";
 import { useApp } from "../lib/useApp.jsx";
 import TermsFoot from "./TermsFoot.jsx";
 
@@ -15,13 +14,7 @@ const links = [
 
 export default function Shell() {
   const { auth, lock, saveError, savedAt } = useApp();
-  const [now, setNow] = useState(() => new Date());
   const [showSaved, setShowSaved] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 15000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (!savedAt) return undefined;
@@ -29,8 +22,6 @@ export default function Shell() {
     const timer = setTimeout(() => setShowSaved(false), 2500);
     return () => clearTimeout(timer);
   }, [savedAt]);
-
-  const today = localISODate(now);
 
   return (
     <div className="app-shell">
@@ -49,10 +40,6 @@ export default function Shell() {
         </nav>
 
         <div className="topbar-meta">
-          <div className="local-clock" title={localTimeZone()}>
-            <strong>{localClock(now)}</strong>
-            <span>{formatDate(today, { weekday: "short", month: "short", year: undefined })}</span>
-          </div>
           <div className="who">{auth.username}</div>
           <button type="button" className="text-btn" onClick={lock}>
             Out

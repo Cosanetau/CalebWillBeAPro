@@ -133,9 +133,6 @@ h3 {
 .desktop-nav a.is-active, .mobile-nav a.is-active { border-bottom-color: var(--red); }
 
 .topbar-meta { display: flex; align-items: center; gap: 12px; }
-.local-clock { display: grid; line-height: 1.05; text-align: right; }
-.local-clock strong { font-size: 14px; }
-.local-clock span { color: var(--muted); font-size: 12px; }
 
 .who {
   font-family: var(--marker);
@@ -636,7 +633,6 @@ textarea {
     padding: max(10px, env(safe-area-inset-top, 0px)) 12px 10px;
   }
   .topbar-meta { width: auto; flex-shrink: 0; gap: 8px; }
-  .local-clock { display: none; }
   .brand-sub { display: none; }
   .brand-name { font-size: 18px; }
   .who { font-size: 18px; }

@@ -248,7 +248,7 @@ textarea {
 .hint { margin-top: 8px; }
 .form-error { margin-top: 10px; }
 
-.macro-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.macro-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
 .macro {
   position: relative;
   padding: 8px;
@@ -390,7 +390,7 @@ textarea {
 .food-card:hover { background: var(--train); }
 .food-card span { color: var(--muted); font-size: 12px; }
 
-.macro-inputs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.macro-inputs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .required-inputs { margin-top: 12px; }
 .custom-meal { margin-top: 12px; }
 .custom-meal .btn { margin-top: 12px; }

@@ -19,6 +19,7 @@ export function emptyState() {
       protein: 160,
       carbs: 490,
       fat: 80,
+      sodium: 2300,
     },
     calendarNotes: {},
     extraEvents: [],
@@ -39,6 +40,7 @@ export function emptyIngredient() {
     protein: "",
     carbs: "",
     fat: "",
+    sodium: "",
   };
 }
 

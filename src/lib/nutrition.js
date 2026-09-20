@@ -58,8 +58,9 @@ export function mealTotals(meals = []) {
       protein: sum.protein + Number(meal.protein || 0),
       carbs: sum.carbs + Number(meal.carbs || 0),
       fat: sum.fat + Number(meal.fat || 0),
+      sodium: sum.sodium + Number(meal.sodium || 0),
     }),
-    { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+    { kcal: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 }
   );
 }
 
@@ -70,8 +71,10 @@ export function inForDayLine(value, goal, unit = "") {
 }
 
 export function emptyNutritionTargets() {
-  return { kcal: 3600, protein: 160, carbs: 490, fat: 80 };
+  return { kcal: 3600, protein: 160, carbs: 490, fat: 80, sodium: 2300 };
 }
+
+export const MACRO_KEYS = ["kcal", "protein", "carbs", "fat", "sodium"];
 
 export function resolveTargets(saved) {
   const defaults = emptyNutritionTargets();
@@ -80,6 +83,7 @@ export function resolveTargets(saved) {
     protein: Number(saved?.protein) > 0 ? Number(saved.protein) : defaults.protein,
     carbs: Number(saved?.carbs) > 0 ? Number(saved.carbs) : defaults.carbs,
     fat: Number(saved?.fat) > 0 ? Number(saved.fat) : defaults.fat,
+    sodium: Number(saved?.sodium) > 0 ? Number(saved.sodium) : defaults.sodium,
   };
 }
 
@@ -89,6 +93,7 @@ export function remaining(targets, totals) {
     protein: roundTo(targets.protein - totals.protein, 1),
     carbs: roundTo(targets.carbs - totals.carbs, 1),
     fat: roundTo(targets.fat - totals.fat, 1),
+    sodium: roundTo(targets.sodium - totals.sodium, 1),
   };
 }
 
@@ -127,6 +132,7 @@ export function weekBuyList(weekDates, foodLogs = {}) {
           protein: 0,
           carbs: 0,
           fat: 0,
+          sodium: 0,
           days: [],
         };
         current.amount += Number(part.amount || 0);
@@ -134,6 +140,7 @@ export function weekBuyList(weekDates, foodLogs = {}) {
         current.protein += Number(part.protein || 0);
         current.carbs += Number(part.carbs || 0);
         current.fat += Number(part.fat || 0);
+        current.sodium += Number(part.sodium || 0);
         if (!current.days.includes(date)) current.days.push(date);
         map.set(key, current);
       }
@@ -156,6 +163,7 @@ export function nutritionBits(item) {
     `P ${item.protein || 0}`,
     `C ${item.carbs || 0}`,
     `F ${item.fat || 0}`,
+    `Na ${item.sodium || 0}`,
   ].filter(Boolean);
 }
 
@@ -175,6 +183,7 @@ export function asRecipe(food) {
         protein: ing.protein ?? "",
         carbs: ing.carbs ?? "",
         fat: ing.fat ?? "",
+        sodium: ing.sodium ?? "",
       })),
     };
   }
@@ -194,6 +203,7 @@ export function asRecipe(food) {
             protein: food.protein ?? "",
             carbs: food.carbs ?? "",
             fat: food.fat ?? "",
+            sodium: food.sodium ?? "",
           },
         ]
       : [],
@@ -216,6 +226,7 @@ export function scaleRecipe(recipe, servings = 1) {
     protein: scale(ing.protein),
     carbs: scale(ing.carbs),
     fat: scale(ing.fat),
+    sodium: scale(ing.sodium),
   }));
   const totals = mealTotals(ingredients);
   return {

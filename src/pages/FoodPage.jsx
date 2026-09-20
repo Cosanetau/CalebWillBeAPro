@@ -11,6 +11,7 @@ import {
   scaleRecipe,
   nutritionBits,
   inForDayLine,
+  MACRO_KEYS,
 } from "../lib/nutrition.js";
 import { foodKind } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
@@ -115,6 +116,7 @@ export default function FoodPage() {
           <Macro label="Pro" value={totals.protein} goal={targets.protein} left={left.protein} />
           <Macro label="Carb" value={totals.carbs} goal={targets.carbs} left={left.carbs} />
           <Macro label="Fat" value={totals.fat} goal={targets.fat} left={left.fat} />
+          <Macro label="Na" value={totals.sodium} goal={targets.sodium} left={left.sodium} unit="mg" />
         </div>
 
         {recipes.length ? (
@@ -216,9 +218,9 @@ export default function FoodPage() {
         </header>
         <p className="muted">Not for every day. Change this when the plan changes.</p>
         <div className="macro-inputs required-inputs">
-          {["kcal", "protein", "carbs", "fat"].map((key) => (
+          {MACRO_KEYS.map((key) => (
             <label key={key}>
-              {key}
+              {key === "sodium" ? "sodium (mg)" : key}
               <input
                 type="number"
                 min="0"

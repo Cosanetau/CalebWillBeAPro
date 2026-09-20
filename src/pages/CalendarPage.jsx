@@ -96,6 +96,7 @@ export default function CalendarPage() {
               >
                 <b className="cell-date">{Number(cell.iso.slice(8))}</b>
                 {weight ? <span className="cell-weight">{weight}</span> : null}
+                <span className="cell-mark">{hasGame ? "G" : cellRest ? "R" : ""}</span>
                 <div
                   className="cell-flags"
                   onClick={(event) => event.stopPropagation()}

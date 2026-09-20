@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { addDaysISO, mondayOfWeek, localISODate, localParts, weekDatesContaining, weekdayIndexFromISO, weekdayLabel } from "./dates.js";
 import { collectRestMap, isRestDay, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { dayKind, dayTypeLabel, foodKind, getSession, planWeek, sessionForDate, sessionIdForWeekday } from "./program.js";
-import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS, inForDayLine, targetDraft, mergeTargetDraft } from "./nutrition.js";
+import { formatWeightKg, mealSlot, mealTotals, remaining, resolveTargets, scaleRecipe, weekBuyList, nutritionBits, MEAL_SLOTS, inForDayLine, targetDraft, mergeTargetDraft, commitTargetDraft } from "./nutrition.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
 import { loginFieldError, roleForUsername, seesNutrition, usernameToEmail } from "./accounts.js";
 
@@ -206,19 +206,53 @@ describe("cookbook", () => {
     ]);
   });
 
+  it("uses Required numbers as the daily In for this day targets", () => {
+    expect(targetDraft({ kcal: 0, protein: 0, carbs: 0, fat: 0, sodium: 0 })).toMatchObject({
+      kcal: "3600",
+      protein: "160",
+      carbs: "490",
+      fat: "80",
+      sodium: "2300",
+    });
+    expect(commitTargetDraft({ kcal: 0, protein: 0 }, { kcal: "3100", protein: "180", carbs: "400", fat: "70", sodium: "2000" })).toEqual({
+      kcal: 3100,
+      protein: 180,
+      carbs: 400,
+      fat: 70,
+      sodium: 2000,
+    });
+    expect(remaining(resolveTargets({ kcal: 3100, protein: 180, carbs: 400, fat: 70, sodium: 2000 }), {
+      kcal: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      sodium: 0,
+    })).toMatchObject({
+      kcal: 3100,
+      protein: 180,
+      carbs: 400,
+      fat: 70,
+      sodium: 2000,
+    });
+  });
+
   it("keeps required macro digits as typed instead of snapping empty fields to defaults", () => {
     expect(targetDraft({ kcal: "3", protein: 160 })).toMatchObject({
       kcal: "3",
-      protein: 160,
-      carbs: "",
-      fat: "",
-      sodium: "",
+      protein: "160",
+      carbs: "490",
+      fat: "80",
+      sodium: "2300",
     });
     expect(resolveTargets({ kcal: "" }).kcal).toBe(3600);
     expect(resolveTargets({ kcal: "3" }).kcal).toBe(3);
     expect(mergeTargetDraft({ kcal: 3600, protein: 160 }, { kcal: "3500" })).toMatchObject({
       kcal: "3500",
       protein: 160,
+    });
+    expect(commitTargetDraft({ kcal: 3600, protein: 160 }, { kcal: "0", protein: "180" })).toMatchObject({
+      kcal: 3600,
+      protein: 180,
     });
   });
 });

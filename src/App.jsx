@@ -15,7 +15,7 @@ export default function App() {
   if (auth.loading) {
     return (
       <div className="boot">
-        <p>Hang on…</p>
+        <p>Hang on dumbass</p>
       </div>
     );
   }

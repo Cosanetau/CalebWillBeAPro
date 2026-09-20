@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   MEAL_SLOTS,
@@ -12,6 +12,8 @@ import {
   nutritionBits,
   inForDayLine,
   MACRO_KEYS,
+  mergeTargetDraft,
+  targetDraft,
 } from "../lib/nutrition.js";
 import { foodKind } from "../lib/program.js";
 import { addDaysISO, formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
@@ -30,6 +32,16 @@ export default function FoodPage() {
   const targets = resolveTargets(state.nutritionTargets);
   const totals = mealTotals(day.food.meals);
   const left = remaining(targets, totals);
+  const [requiredDraft, setRequiredDraft] = useState(() => targetDraft(state.nutritionTargets));
+  const requiredDirty = useRef(false);
+  const requiredDraftRef = useRef(requiredDraft);
+  requiredDraftRef.current = requiredDraft;
+
+  useEffect(() => {
+    if (requiredDirty.current) return;
+    setRequiredDraft(targetDraft(state.nutritionTargets));
+  }, [state.nutritionTargets]);
+
   const recipes = useMemo(
     () =>
       [...(state.foods || [])]
@@ -64,12 +76,18 @@ export default function FoodPage() {
   }
 
   function setRequired(key, value) {
-    patch({
-      nutritionTargets: {
-        ...targets,
-        [key]: value,
-      },
-    });
+    requiredDirty.current = true;
+    setRequiredDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function commitRequired() {
+    if (!requiredDirty.current) return;
+    const draft = requiredDraftRef.current;
+    requiredDirty.current = false;
+    patch((current) => ({
+      ...current,
+      nutritionTargets: mergeTargetDraft(current.nutritionTargets, draft),
+    }));
   }
 
   return (
@@ -225,8 +243,13 @@ export default function FoodPage() {
                 type="number"
                 min="0"
                 step="1"
-                value={state.nutritionTargets?.[key] ?? targets[key]}
+                inputMode="decimal"
+                value={requiredDraft[key] ?? ""}
                 onChange={(event) => setRequired(key, event.target.value)}
+                onBlur={commitRequired}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") event.currentTarget.blur();
+                }}
               />
             </label>
           ))}

@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useApp, useDay, useWeek } from "../lib/useApp.jsx";
 import { formatDate, localISODate, weekdayLabel } from "../lib/dates.js";
 import { isRestDay } from "../lib/restDays.js";
 import { sessionForDate } from "../lib/program.js";
 import { rxLine, sessionItems } from "../data/sessions.js";
+import { emptyFoodDay } from "../lib/state.js";
 
 export default function GymPage() {
   const today = localISODate();
@@ -14,14 +15,45 @@ export default function GymPage() {
   const rest = isRestDay(selected, week.restMap);
   const isGame = Boolean(day.game);
   const session = sessionForDate(selected, week.restMap, state.games);
-  const weighIn = day.food.weightKg;
   const items = sessionItems(session);
+  const [weighDraft, setWeighDraft] = useState(day.food.weightKg ?? "");
+  const weighDirty = useRef(false);
+  const weighDraftRef = useRef(weighDraft);
+  weighDraftRef.current = weighDraft;
+
+  useEffect(() => {
+    weighDirty.current = false;
+    setWeighDraft(day.food.weightKg ?? "");
+  }, [selected]);
+
+  useEffect(() => {
+    if (weighDirty.current) return;
+    setWeighDraft(day.food.weightKg ?? "");
+  }, [day.food.weightKg]);
 
   function setWeighIn(value) {
-    day.setFood({ weightKg: value });
-    if (selected === today) {
-      patch({ profile: { ...state.profile, weightKg: value } });
-    }
+    weighDirty.current = true;
+    setWeighDraft(value);
+  }
+
+  function commitWeighIn() {
+    if (!weighDirty.current) return;
+    const value = weighDraftRef.current;
+    weighDirty.current = false;
+    patch((current) => {
+      const food = current.foodLogs[selected] || emptyFoodDay();
+      const next = {
+        ...current,
+        foodLogs: {
+          ...current.foodLogs,
+          [selected]: { ...food, weightKg: value },
+        },
+      };
+      if (selected === today) {
+        next.profile = { ...current.profile, weightKg: value };
+      }
+      return next;
+    });
   }
 
   function setItem(item, next) {
@@ -59,8 +91,13 @@ export default function GymPage() {
               min="40"
               max="160"
               step="0.1"
-              value={weighIn}
+              inputMode="decimal"
+              value={weighDraft ?? ""}
               onChange={(event) => setWeighIn(event.target.value)}
+              onBlur={commitWeighIn}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") event.currentTarget.blur();
+              }}
               placeholder="Today’s number"
             />
           </label>

@@ -87,6 +87,14 @@ export function resolveTargets(saved) {
   };
 }
 
+export function targetDraft(saved) {
+  return Object.fromEntries(MACRO_KEYS.map((key) => [key, saved?.[key] ?? ""]));
+}
+
+export function mergeTargetDraft(saved, draft) {
+  return { ...(saved || {}), ...(draft || {}) };
+}
+
 export function remaining(targets, totals) {
   return {
     kcal: roundTo(targets.kcal - totals.kcal, 1),

@@ -204,6 +204,7 @@ export default function CookbookPage() {
                         type="number"
                         min="0"
                         step="0.1"
+                        inputMode="decimal"
                         value={ing[key]}
                         onChange={(event) => setIngredient(index, { [key]: event.target.value })}
                       />

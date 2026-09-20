@@ -4,6 +4,7 @@ import { emptyFoodDay, emptyState, emptyWorkoutDay } from "./state.js";
 import { mondayOfWeek, localISODate, weekDatesContaining } from "./dates.js";
 import { collectRestMap, restDatesInWeek, applyGameRest } from "./restDays.js";
 import { planWeek } from "./program.js";
+import { PERSIST_DEBOUNCE_MS, bumpPersistGen, isStaleSave, keepLocalState } from "./persistClient.js";
 
 const AppContext = createContext(null);
 
@@ -13,6 +14,7 @@ export function AppProvider({ children }) {
   const [saveError, setSaveError] = useState("");
   const [savedAt, setSavedAt] = useState(null);
   const timer = useRef(null);
+  const persistGen = useRef(0);
 
   const hydrate = useCallback(async () => {
     try {
@@ -47,16 +49,20 @@ export function AppProvider({ children }) {
 
   const persist = useCallback((next) => {
     clearTimeout(timer.current);
+    persistGen.current = bumpPersistGen(persistGen.current);
+    const gen = persistGen.current;
     timer.current = setTimeout(async () => {
       try {
         const saved = await saveState(next);
-        setState(saved.state);
+        if (isStaleSave(gen, persistGen.current)) return;
+        setState((current) => keepLocalState(current, saved.state));
         setSavedAt(new Date());
         setSaveError(saved.warning || "");
       } catch (error) {
+        if (isStaleSave(gen, persistGen.current)) return;
         setSaveError(error.message || "Could not save.");
       }
-    }, 400);
+    }, PERSIST_DEBOUNCE_MS);
   }, []);
 
   const patch = useCallback(

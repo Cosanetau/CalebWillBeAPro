@@ -9,7 +9,7 @@ import { emptyFoodDay } from "../lib/state.js";
 export default function GymPage() {
   const today = localISODate();
   const [selected, setSelected] = useState(today);
-  const { state, patch, actor, auth } = useApp();
+  const { state, patch, auth } = useApp();
   const week = useWeek(selected);
   const day = useDay(selected);
   const rest = isRestDay(selected, week.restMap);
@@ -188,17 +188,6 @@ export default function GymPage() {
               ))
             )}
           </>
-        )}
-
-        {isGame || rest ? null : (
-          <label>
-            How it felt
-            <input
-              value={day.workout.notes}
-              onChange={(event) => day.setWorkout({ notes: event.target.value, sessionId: session.id })}
-              placeholder={actor === "nutritionist" ? "Nix’s gym note" : "Caleb’s gym note"}
-            />
-          </label>
         )}
         {isGame ? null : (
           <p className="muted">

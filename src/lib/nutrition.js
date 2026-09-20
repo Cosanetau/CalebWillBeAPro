@@ -142,7 +142,7 @@ export function weekBuyList(weekDates, foodLogs = {}) {
         const name = String(part.name || "").trim();
         if (!name) continue;
         const unit = String(part.unit || "").trim();
-        const key = `${name.toLowerCase()}|${unit.toLowerCase()}`;
+        const key = shopItemKey({ name, unit });
         const current = map.get(key) || {
           name,
           unit,
@@ -166,6 +166,34 @@ export function weekBuyList(weekDates, foodLogs = {}) {
     }
   }
   return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function shopItemKey(item) {
+  return `${String(item?.name || "").trim().toLowerCase()}|${String(item?.unit || "").trim().toLowerCase()}`;
+}
+
+export function isGroceryBought(bought, weekMonday, item) {
+  return Boolean(bought?.[weekMonday]?.[shopItemKey(item)]);
+}
+
+export function toggleGroceryBought(bought, weekMonday, item) {
+  const key = shopItemKey(item);
+  const week = { ...(bought?.[weekMonday] || {}) };
+  if (week[key]) delete week[key];
+  else week[key] = true;
+  const next = { ...(bought || {}) };
+  if (Object.keys(week).length) next[weekMonday] = week;
+  else delete next[weekMonday];
+  return next;
+}
+
+export function sortShopList(list, bought, weekMonday) {
+  return [...(list || [])].sort((a, b) => {
+    const aBought = isGroceryBought(bought, weekMonday, a);
+    const bBought = isGroceryBought(bought, weekMonday, b);
+    if (aBought !== bBought) return aBought ? 1 : -1;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
 }
 
 export function amountLine(item) {

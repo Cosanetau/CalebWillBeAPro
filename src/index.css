@@ -376,8 +376,19 @@ textarea {
 .meal-list span { display: block; color: var(--muted); font-size: 13px; }
 
 .shop-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
-.shop-list li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--ink); padding: 8px 0; }
-.shop-list span { color: var(--muted); }
+.shop-list li { border-bottom: 1px solid var(--ink); padding: 8px 0; }
+.shop-list .check { width: 100%; align-items: center; gap: 12px; }
+.shop-list .check span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+}
+.shop-list .check em { color: var(--muted); font-style: normal; font-weight: 500; }
+.shop-list li.is-bought strong,
+.shop-list li.is-bought em { text-decoration: line-through; color: var(--muted); }
 .food-book { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
 .food-book li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--ink); padding: 8px 0; align-items: flex-start; }
 .food-book span { display: block; color: var(--muted); font-size: 13px; }
@@ -595,7 +606,7 @@ textarea {
     align-items: center;
   }
   .food-book li,
-  .shop-list li,
+  .shop-list .check span,
   .meal-list li {
     flex-wrap: wrap;
   }
@@ -654,7 +665,7 @@ textarea {
   .cell-weight { font-size: 10px; }
   .panel-head { flex-wrap: wrap; }
   .food-book li,
-  .shop-list li {
+  .shop-list .check span {
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
@@ -667,4 +678,5 @@ textarea {
   .work-list strong { font-size: 18px; }
   .day-options { gap: 10px; }
   .check.pill { min-height: 42px; }
+  .shop-list .check { min-height: 44px; }
 }

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { amountLine, weekBuyList } from "../lib/nutrition.js";
+import { amountLine, isGroceryBought, sortShopList, toggleGroceryBought, weekBuyList } from "../lib/nutrition.js";
 import { addDaysISO, localISODate, weekdayLabel } from "../lib/dates.js";
 import { foodKind } from "../lib/program.js";
 import { seesNutrition } from "../lib/accounts.js";
@@ -9,17 +9,28 @@ import { useApp, useWeek } from "../lib/useApp.jsx";
 export default function GroceryPage() {
   const today = localISODate();
   const [selected, setSelected] = useState(today);
-  const { state, auth } = useApp();
+  const { state, auth, patch } = useApp();
   const showMacros = seesNutrition(auth.role);
   const week = useWeek(selected);
-  const shop = weekBuyList(week.weekDates, state.foodLogs);
+  const monday = week.monday;
+  const shop = useMemo(() => {
+    const list = weekBuyList(week.weekDates, state.foodLogs);
+    return sortShopList(list, state.groceryBought, monday);
+  }, [week.weekDates, state.foodLogs, state.groceryBought, monday]);
+
+  function toggleItem(item) {
+    patch((current) => ({
+      ...current,
+      groceryBought: toggleGroceryBought(current.groceryBought, monday, item),
+    }));
+  }
 
   return (
     <div className="stack">
       <section className="hero-card compact">
         <p className="kicker">Grocery · {auth.username}</p>
         <h1>Grocery</h1>
-        <p className="lede">What to buy this week, from the food you dropped onto days.</p>
+        <p className="lede">What to buy this week, from the food you dropped onto days. Tick it off in the aisle.</p>
       </section>
 
       <div className="week-shift">
@@ -54,16 +65,24 @@ export default function GroceryPage() {
         </header>
         {shop.length ? (
           <ul className="shop-list">
-            {shop.map((item) => (
-              <li key={`${item.name}-${item.unit}`}>
-                <strong>{item.name}</strong>
-                <span>
-                  {amountLine(item) || "as added"}
-                  {showMacros && item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
-                  {showMacros && item.sodium ? ` · Na ${Math.round(item.sodium)}` : ""}
-                </span>
-              </li>
-            ))}
+            {shop.map((item) => {
+              const bought = isGroceryBought(state.groceryBought, monday, item);
+              return (
+                <li key={`${item.name}-${item.unit}`} className={bought ? "is-bought" : ""}>
+                  <label className="check">
+                    <input type="checkbox" checked={bought} onChange={() => toggleItem(item)} />
+                    <span>
+                      <strong>{item.name}</strong>
+                      <em>
+                        {amountLine(item) || "as added"}
+                        {showMacros && item.kcal ? ` · ${Math.round(item.kcal)} kcal` : ""}
+                        {showMacros && item.sodium ? ` · Na ${Math.round(item.sodium)}` : ""}
+                      </em>
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="muted">

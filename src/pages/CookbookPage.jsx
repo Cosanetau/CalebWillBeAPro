@@ -37,7 +37,6 @@ export default function CookbookPage() {
     setEditingId(recipe.id);
     setDraft({
       name: recipe.name,
-      notes: recipe.notes,
       ingredients: recipe.ingredients.length ? recipe.ingredients.map((ing) => ({ ...ing })) : [{ ...emptyIngredient() }],
     });
     setAdding(true);
@@ -83,7 +82,6 @@ export default function CookbookPage() {
     const item = {
       id: editingId || newId(),
       name: draft.name.trim(),
-      notes: draft.notes.trim(),
       ingredients,
     };
     const next = [...(state.foods || [])];
@@ -128,7 +126,6 @@ export default function CookbookPage() {
                       {recipe.ingredients.map((ing) => ing.name).filter(Boolean).join(", ") || "No ingredients"}
                     </span>
                     <span>{nutritionBits(totals).join(" · ")}</span>
-                    {recipe.notes ? <span>{recipe.notes}</span> : null}
                   </div>
                   <div className="row-actions">
                     <button type="button" className="text-btn" onClick={() => openEdit(recipe)}>
@@ -218,15 +215,6 @@ export default function CookbookPage() {
               Add ingredient
             </button>
             <p className="muted">This food: {nutritionBits(draftTotals).join(" · ") || "no macros yet"}</p>
-            <label>
-              Notes
-              <textarea
-                rows="2"
-                value={draft.notes}
-                onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
-                placeholder="How you cook it, shop aisle, anything else"
-              />
-            </label>
             <button type="submit" className="btn">
               {editingId ? "Save food" : "Add to cookbook"}
             </button>

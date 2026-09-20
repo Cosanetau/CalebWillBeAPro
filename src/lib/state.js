@@ -21,7 +21,7 @@ export function emptyState() {
       fat: 80,
       sodium: 2300,
     },
-    calendarNotes: {},
+    groceryBought: {},
     extraEvents: [],
   };
 }
@@ -47,7 +47,6 @@ export function emptyIngredient() {
 export function emptyRecipe() {
   return {
     name: "",
-    notes: "",
     ingredients: [emptyIngredient()],
   };
 }

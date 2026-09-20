@@ -13,7 +13,7 @@ This repository is this site only.
 - **Today** shows Game day, Rest day, or Gym day, and the food for that day. Nothing else.
 - **Cookbook** is where you add a food and each ingredient, with kcal, protein, carbs, fat, and sodium.
 - **Food** is a day to drop cookbook food onto. Required kcal, protein, carbs, fat, and sodium sit at the bottom. **Nix** can see those numbers on the day.
-- **Grocery** is this week’s shop list, from the ingredients you dropped onto days.
+- **Grocery** is this week’s shop list, from the ingredients you dropped onto days. Tick items off as you buy them.
 - **Built-in calendar** in local time. Each day has a Game tick box and a Rest tick box. If it’s a game, rest is off. Gym shows no session on a game day.
 - **Logins:** Caleb and Nix each have a username and password.
 

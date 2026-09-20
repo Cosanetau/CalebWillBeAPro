@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { APP_VERSION } from "../lib/version.js";
 
 const POINTS = [
   "Nicola de Vos is entitled to claim at least 73% of the credit for anything impressive Caleb ever achieves.",
@@ -16,14 +17,17 @@ export default function TermsFoot() {
 
   return (
     <footer className="site-foot">
-      <button
-        type="button"
-        className="terms-toggle"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-      >
-        T&Cs
-      </button>
+      <div className="foot-meta">
+        <button
+          type="button"
+          className="terms-toggle"
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          T&Cs
+        </button>
+        <p className="app-ver">{APP_VERSION}</p>
+      </div>
       {open ? (
         <article className="terms-card">
           <h2>

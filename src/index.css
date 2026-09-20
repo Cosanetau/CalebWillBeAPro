@@ -519,6 +519,22 @@ textarea {
   width: min(var(--max), calc(100% - 28px));
   margin: 8px auto 28px;
 }
+.foot-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-ver {
+  margin: 0;
+  font-family: var(--marker);
+  font-size: 15px;
+  color: var(--muted);
+  transform: rotate(3deg);
+}
+.gate-ver {
+  margin-top: 14px;
+  text-align: right;
+}
 .terms-toggle {
   font-family: var(--marker);
   font-size: 15px;
